@@ -315,6 +315,8 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 .bscan{position:absolute;left:0;top:0;transform-origin:0 0;z-index:2;will-change:transform}
 .bscan .bs-in{position:relative;width:100%;height:100%;border-radius:8px;overflow:hidden;border:1px solid var(--line);box-shadow:0 26px 60px -30px rgba(0,0,0,.9);background:#0E0A08}
 .bscan img{display:block;width:100%;height:100%;object-fit:cover;filter:sepia(.25) contrast(1.04)}
+.bscan.photo img{filter:none}
+.bscan{visibility:hidden}
 .bscan svg{position:absolute;inset:0;width:100%;height:100%}
 .bscan .bs-lab{position:absolute;left:10px;top:10px;font-family:var(--f-mono);font-size:12px;background:var(--bark);color:var(--paper);padding:4px 10px;border-radius:999px;letter-spacing:.06em}
 .pin-title{position:absolute;top:calc(62px + env(safe-area-inset-top,0px));left:var(--gl);z-index:3;display:flex;flex-direction:column;gap:8px;max-width:46%}
@@ -534,10 +536,11 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 </div></section>
 
 <!-- ================= ADEGAN 3D: dari B-scan ke akar ================= -->
-<section class="pin" id="akar3d" aria-label="Rekonstruksi akar 3D dari B-scan">
+<section class="pin" id="akar3d" aria-label="Alur lengkap: dari pemindaian GPR sampai akar 3D">
 <canvas id="gl" aria-hidden="true"></canvas>
+<div class="bscan photo" id="fcard"><div class="bs-in"><img src="img/akuisisi.jpg" alt="Akuisisi data GPR di sekitar pohon Agathis, Hutan Pendidikan Gunung Walat" width="1400" height="1045"></div><span class="bs-lab">Akuisisi · HPGW</span></div>
 <div class="bscan" id="bscan"><div class="bs-in"><img src="img/radargram_bersih.jpg" alt="Citra B-scan pohon Agathis ke-1 (AG03) dengan lima titik puncak hiperbola" width="1035" height="1150"><svg viewBox="0 0 1035 1150" aria-hidden="true"><g class="apx" id="apxB"></g></svg></div><span class="bs-lab">B-scan · AG03</span></div>
-<div class="pin-title"><span class="kicker"><b>04 · Langkah 2</b></span><h2>Dari B-scan<br>ke akar 3D</h2></div>
+<div class="pin-title"><span class="kicker"><b>05 · Alur lengkap</b></span><h2>Dari pemindaian<br>ke akar 3D</h2></div>
 <div class="compass">U ↑ · skala tegak ×2</div>
 <div class="story" aria-live="polite"><div class="prog" id="prog"></div><div class="kicker" id="sK"></div><h3 id="sH"></h3><p id="sP"></p></div>
 <p class="ill">Model 3D: ilustrasi. Gambar hasil asli ada di bawah.</p>
@@ -551,16 +554,13 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <div style="display:flex;flex-direction:column;gap:14px"><div class="kicker"><b>Hasil asli</b> · Pohon Agathis ke-1 (AG03)</div><div class="tabs" id="abcTabs" role="group" aria-label="Tahap"></div><h4 id="abcH"></h4></div>
 </div></div>
 <div class="grid2">
-<div class="card rv"><h3>Uji pada 60 pohon sintetis</h3>
-<div class="legend"><span><i style="background:var(--moss)"></i>GCN–GAN standar</span><span><i style="background:var(--bark)"></i>usulan</span></div>
-<div class="bars vs" id="synBars"></div>
-<p class="note">Kepala induk berarah lebih baik di 60 dari 60 pohon (p &lt; 0,0001). Fitur blended di GCN dan gerbang GCN di Bio-cGAN tidak menambah akurasi; dilaporkan sebagai ablasi.</p></div>
+<div class="card wide rv"><h3>Uji pada 60 pohon sintetis</h3><p class="note">Diuji pada 60 pohon sintetis yang bentuk akarnya sudah diketahui.</p>
+<div class="tstats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div><b>0,809</b><span>akurasi topologi (induk tiap simpul tepat)</span></div><div><b>0,828</b><span>F1 arah akar di cincin r 0,8 m</span></div><div><b>0,102 m</b><span>selisih bentuk (Chamfer), makin kecil makin baik</span></div></div></div>
 <div class="card wide rv" id="treeCard">
 <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:end"><h3>Jelajahi delapan pohon</h3><span class="kicker">data lapangan per pohon</span></div>
 <div class="trees" id="trees" role="group" aria-label="Pilih pohon"></div>
 <div class="tstats" id="tstats"></div>
-<div class="legend"><span><i style="background:var(--moss)"></i>GCN–GAN standar</span><span><i style="background:var(--bark)"></i>usulan (final)</span></div>
-<div class="bars vs" id="treeBars"></div>
+<div class="bars" id="treeBars"></div>
 <div class="imgs" id="treeImgs"></div>
 </div>
 </div>
@@ -856,15 +856,17 @@ $('details.more').addEventListener('toggle',e=>{if(e.target.open){drawDet(2);$$(
 (function(){const C1=[['AG03',264,50,111],['AG01',220,52,104],['AG04',303,51,95],['AG05',180,31,76],['AG06',203,56,88],['AG07',173,52,89],['AG08',158,39,66],['AG09',167,57,79]];
  $('#oof').innerHTML=C1.map(([id,tp,fp,fn],i)=>{const P=tp/(tp+fp),R=tp/(tp+fn);return '<div class="drow"><div class="k">Pohon '+(i+1)+'<small>'+id+' · P '+fmt(P,2)+' · R '+fmt(R,2)+'</small></div><div class="pair"><div class="track"><div class="fill p" data-w="'+((P-.5)/.5*100).toFixed(1)+'"></div></div><div class="track"><div class="fill r" data-w="'+((R-.5)/.5*100).toFixed(1)+'"></div></div></div></div>'}).join('')})();
 
-/* ===== ADEGAN 3D: dari B-scan ke akar 3D ===== */
+/* ===== ADEGAN 3D: alur lengkap, dari akuisisi sampai akar 3D ===== */
 const STEPS3=[
- {k:'Mulai dari citra B-scan',h:'Satu radargram, lima akar.',p:'Ini citra B-scan asli dari pohon Agathis ke-1 (AG03). Model computer vision menandai puncak setiap hiperbola: di titik inilah akar memotong lintasan radar.'},
- {k:'Dari 2D ke 3D',h:'Setiap lintasan punya alamat.',p:'Posisi setiap lintasan di sekitar pohon diketahui. Karena itu setiap puncak di B-scan bisa diberi koordinat X, Y, dan kedalaman Z dalam meter.'},
- {k:'Titik apex',h:'Ribuan titik dari 850 radargram.',p:'Semua puncak dari semua lintasan dikumpulkan di sekitar batang. Sebagian adalah pantulan palsu dari batu atau air.'},
- {k:'BF-GCN',h:'Titik palsu disaring.',p:'Titik kembar digabung menjadi simpul graf. GCN menilai setiap simpul bersama tetangganya; yang tidak cocok dengan pola akar dibuang.'},
- {k:'Kepala induk berarah',h:'Setiap titik memilih induknya.',p:'Setiap simpul memilih satu induk yang lebih dekat ke batang. Hasilnya pohon akar tanpa putaran: setiap cabang tahu asalnya.'},
- {k:'Kurva halus',h:'Titik menjadi akar.',p:'Urutan simpul diubah menjadi kurva akar: kemiringan dibatasi 35°, arah menjauh dari batang, kedalaman dihaluskan.'},
- {k:'Bio-cGAN',h:'Celah dekat batang diisi.',p:'Radar baru mulai sekitar 1,15 m dari batang. Bagian itu diisi kurva dari GAN bersyarat: keluar mendatar dari leher akar, lalu menurun.'}];
+ {k:'Akuisisi data',h:'GPR memindai tanah di sekitar pohon.',p:'Alat GPR didorong lintasan demi lintasan, berpindah mengelilingi pohon: utara, timur, selatan, lalu barat. Pusat batang menjadi titik nol.'},
+ {k:'Citra radargram',h:'Setiap lintasan menjadi satu B-scan.',p:'Pantulan gelombang di sepanjang lintasan tergambar sebagai citra radargram (B-scan). Akar tampak sebagai lengkung hiperbola.'},
+ {k:'Computer vision',h:'Puncak hiperbola ditemukan.',p:'Model RetinaNet blended feature extraction menandai puncak (apex) setiap hiperbola. Di titik inilah akar memotong lintasan radar.'},
+ {k:'Apex → koordinat',h:'Setiap puncak punya alamat 3D.',p:'Posisi lintasan di sekitar pohon diketahui, sehingga setiap puncak diberi koordinat X, Y, dan kedalaman Z dalam meter.'},
+ {k:'Sparse point cloud',h:'Titik dari semua lintasan.',p:'Puncak dari ratusan radargram dikumpulkan menjadi awan titik yang jarang di sekitar batang. Sebagian adalah pantulan palsu dari batu atau air.'},
+ {k:'Merging',h:'Titik yang berdekatan digabung.',p:'Titik kembar dari lintasan yang bersebelahan digabung menjadi satu simpul, lalu setiap simpul dihubungkan dengan tetangga terdekatnya menjadi graf.'},
+ {k:'BF-GCN',h:'Titik palsu disaring.',p:'GCN menilai setiap simpul bersama tetangganya. Simpul yang tidak cocok dengan pola akar dibuang.'},
+ {k:'BF-GCN',h:'Simpul tersambung menjadi akar.',p:'Setiap simpul memilih satu induk yang lebih dekat ke batang, lalu urutan simpul dihaluskan menjadi kurva akar.'},
+ {k:'Bio-cGAN',h:'Celah dekat batang diisi.',p:'Radar tidak bisa memindai tepat di samping batang. Bagian itu diisi kurva dari GAN bersyarat yang mengikuti aturan tumbuh akar.'}];
 let setStep3=()=>{};
 (function(){
  const N=STEPS3.length,prog=$('#prog');prog.innerHTML=STEPS3.map(()=>'<i><b></b></i>').join('');const bars=$$('b',prog);
@@ -875,26 +877,25 @@ let setStep3=()=>{};
  setStep3(0,0);
 })();
 (function(){
- const sec=$('#akar3d'),cv=$('#gl'),bs=$('#bscan');
+ const sec=$('#akar3d'),cv=$('#gl'),bs=$('#bscan'),fc=$('#fcard'),bsIn=$('.bs-in',bs);
  $('#apxB').innerHTML=AP.map(([x,y],i)=>'<g class="a"><circle class="c" cx="'+x+'" cy="'+y+'" r="30"/><text x="'+(x+38)+'" y="'+(y-32)+'">'+(i+1)+'</text></g>').join('');
  const apxG=$$('#apxB .a');
- const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),seg01=(p,a,b)=>clamp((p-a)/(b-a)),lerp=(a,b,t)=>a+(b-a)*t;
+ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),seg01=(p,a,b)=>clamp((p-a)/(b-a)),lerp=(a,b,t)=>a+(b-a)*t,ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
  let W=innerWidth,H=innerHeight;const narrow=()=>W<820;
- function placeB(p){ // posisi kartu B-scan: besar di awal, mengecil ke pojok kanan atas
-  const r=sec.getBoundingClientRect();W=r.width;H=r.height;
-  const h0=narrow()?H*.44:H*.72,w0=Math.min(h0*1035/1150,W*.86);const hh=w0*1150/1035;
-  const sx=narrow()?(W-w0)/2:W*.93-w0,sy=narrow()?H*.13:(H-hh)/2+18;
-  const sc=narrow()?.24:.26,ex=W-w0*sc-(narrow()?16:24),ey=narrow()?64:84;
-  const t=seg01(p,1/N3*.15,1/N3*.95),e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-  bs.style.width=w0+'px';bs.style.height=hh+'px';
-  bs.style.transform='translate('+lerp(sx,ex,e).toFixed(1)+'px,'+lerp(sy,ey,e).toFixed(1)+'px) scale('+lerp(1,sc,e).toFixed(4)+')';
-  bs.style.opacity=String(lerp(1,.92,e));
-  apxG.forEach((g,i)=>{const a=seg01(p,.012+i*.012,.03+i*.012);g.style.opacity=String(a);g.style.transformBox='fill-box';g.style.transformOrigin='center';g.style.transform='scale('+(.4+.6*a).toFixed(3)+')'});
- }
- const N3=STEPS3.length;
- function fallback(){cv.remove();const d=document.createElement('div');d.className='fallback';d.innerHTML='<img src="img/t_c.jpg" alt="Rekonstruksi akar 3D final Pohon 1">';sec.insertBefore(d,sec.firstChild);bs.style.display='none';setStep3(N3-1,1)}
- if(!window.THREE){placeB(0);fallback();return}
- let renderer;try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true})}catch(e){placeB(0);fallback();return}
+ const N3=STEPS3.length,U=(p,s)=>seg01(p,s/N3,(s+1)/N3); // progres di dalam langkah s
+ // kartu (foto / B-scan): besar di kanan (e=0) -> kecil di pojok kanan atas (e=1)
+ function place(el,asp,e,op,wMax){const h0=narrow()?H*.44:H*.72,w0=Math.min(h0/asp,W*(narrow()?.86:wMax)),hh=w0*asp;
+  const sx=narrow()?(W-w0)/2:W*.93-w0,sy=narrow()?H*.13:(H-hh)/2+18,sc=narrow()?.24:.26,ex=W-w0*sc-(narrow()?16:24),ey=narrow()?64:84;
+  el.style.width=w0+'px';el.style.height=hh+'px';el.style.transform='translate('+lerp(sx,ex,e).toFixed(1)+'px,'+lerp(sy,ey,e).toFixed(1)+'px) scale('+lerp(1,sc,e).toFixed(4)+')';
+  el.style.opacity=String(op);el.style.visibility=op>.01?'visible':'hidden'}
+ function cards(p){const r=sec.getBoundingClientRect();W=r.width;H=r.height;const u0=U(p,0),u1=U(p,1),u2=U(p,2);
+  place(fc,1045/1400,ease(seg01(u0,.3,.75)),1-seg01(u1,0,.25),.56);
+  const e=ease(seg01(u2,.72,1));place(bs,1150/1035,e,seg01(u1,.05,.3)*lerp(1,.92,e),.86);
+  bsIn.style.clipPath='inset(0 '+((1-seg01(u1,.15,.75))*100).toFixed(1)+'% 0 0)';
+  apxG.forEach((g,i)=>{const a=seg01(u2,.1+i*.08,.25+i*.08);g.style.opacity=String(a);g.style.transformBox='fill-box';g.style.transformOrigin='center';g.style.transform='scale('+(.4+.6*a).toFixed(3)+')'})}
+ function fallback(){cv.remove();const d=document.createElement('div');d.className='fallback';d.innerHTML='<img src="img/t_c.jpg" alt="Rekonstruksi akar 3D final Pohon 1">';sec.insertBefore(d,sec.firstChild);bs.style.display='none';fc.style.display='none';setStep3(N3-1,1)}
+ if(!window.THREE){fallback();return}
+ let renderer;try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true})}catch(e){fallback();return}
  const T=THREE,scene=new T.Scene(),cam=new T.PerspectiveCamera(38,1,.1,200);
  renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));
  const EX=2.0,P=(x,y,d)=>new T.Vector3(x,-d*EX,-y),R=rng(31);
@@ -907,21 +908,41 @@ let setStep3=()=>{};
  // swath AG03 (tata_letak_swath.csv): sisi dan jarak tegak lurus (m)
  const SW=[['B',1.5],['B',2.5],['B',3.5],['B',4.5],['T',1.5],['T',2.5],['U',1.5],['U',2.5],['U',3.5],['S',1.5],['S',2.5],['S',3.5]];
  const lines=[];SW.forEach(([s,dd])=>{for(let k=0;k<10;k++){const off=dd+(k-4.5)*.08;lines.push(s==='B'||s==='T'?{ax:'x',v:s==='B'?-off:off}:{ax:'y',v:s==='U'?off:-off})}});
+ // urutan pemindaian mengelilingi pohon (U -> T -> S -> B), dari swath terdalam
+ const SIDE={U:0,T:1,S:2,B:3},order=SW.map((s,i)=>i).sort((a,b)=>SIDE[SW[a][0]]-SIDE[SW[b][0]]||SW[a][1]-SW[b][1]),rank=[];order.forEach((si,r)=>rank[si]=r);
+ const ends=SW.map(([s,dd])=>s==='U'?[[-3.6,-dd],[3.6,-dd]]:s==='T'?[[dd,-3.6],[dd,3.6]]:s==='S'?[[3.6,dd],[-3.6,dd]]:[[-dd,3.6],[-dd,-3.6]]); // [x,z] dunia
+ const yaw=([a,b])=>Math.atan2(-(b[0]-a[0]),-(b[1]-a[1]));
  const group=new T.Group();scene.add(group);
- const swMat=new T.MeshBasicMaterial({color:0x9CC3BD,transparent:true,opacity:0,side:T.DoubleSide,depthWrite:false});
- SW.forEach(([s,dd])=>{const v=s==='B'||s==='T';const m=new T.Mesh(new T.PlaneGeometry(v?.8:7.2,v?7.2:.8),swMat);m.rotation.x=-Math.PI/2;if(s==='B')m.position.set(-dd,0,0);if(s==='T')m.position.set(dd,0,0);if(s==='U')m.position.set(0,0,-dd);if(s==='S')m.position.set(0,0,dd);group.add(m)});
+ const swG=new T.PlaneGeometry(.8,1);swG.rotateX(-Math.PI/2);swG.translate(0,0,-.5);
+ const swM=SW.map((s,i)=>{const mat=new T.MeshBasicMaterial({color:0x9CC3BD,transparent:true,opacity:0,side:T.DoubleSide,depthWrite:false}),m=new T.Mesh(swG,mat);const[a]=ends[i];m.position.set(a[0],.002,a[1]);m.rotation.y=yaw(ends[i]);m.scale.z=.001;group.add(m);return m});
+ // alat GPR
+ const cart=new T.Group(),cMats=[];const cm=(c)=>{const m=new T.MeshStandardMaterial({color:c,roughness:.6,transparent:true});cMats.push(m);return m};
+ const body=new T.Mesh(new T.BoxGeometry(.5,.12,.38),cm(0x2E3337));body.position.y=.12;cart.add(body);
+ const lid=new T.Mesh(new T.BoxGeometry(.42,.03,.3),cm(0xC9CDD1));lid.position.y=.195;cart.add(lid);
+ [[-.2,-.15],[.2,-.15],[-.2,.15],[.2,.15]].forEach(([x,z])=>{const w=new T.Mesh(new T.CylinderGeometry(.065,.065,.04,16),cm(0x111111));w.rotation.z=Math.PI/2;w.position.set(x+(x<0?-.03:.03),.065,z);cart.add(w)});
+ const hdl=new T.Mesh(new T.BoxGeometry(.03,.03,.55),cm(0x55595D));hdl.position.set(0,.36,.38);hdl.rotation.x=.75;cart.add(hdl);
+ const waveM=new T.MeshBasicMaterial({color:0x9CC3BD,transparent:true,opacity:0,side:T.DoubleSide,depthWrite:false}),wave=new T.Mesh(new T.RingGeometry(.2,.24,48),waveM);wave.rotation.x=-Math.PI/2;wave.position.y=.01;cart.add(wave);
+ cart.scale.setScalar(1.8);group.add(cart);
  const ringM=new T.MeshBasicMaterial({color:0xEF8656,transparent:true,opacity:0,side:T.DoubleSide});const ring=new T.Mesh(new T.RingGeometry(.79,.81,96),ringM);ring.rotation.x=-Math.PI/2;ring.position.y=.002;group.add(ring);
  const grid=new T.PolarGridHelper(5,12,5,64,0x47362A,0x2C2119);grid.material.transparent=true;grid.material.opacity=.6;group.add(grid);
  const bk=document.createElement('canvas');bk.width=256;bk.height=512;{const c=bk.getContext('2d'),r=rng(9);c.fillStyle='#B3AB9E';c.fillRect(0,0,256,512);for(let i=0;i<110;i++){c.fillStyle=['#A9744D','#DEDAD0','#8E867A','#C7C0B3','#BC8558','#9D958A','#D4CEC2'][i%7];c.globalAlpha=.3+r()*.4;c.beginPath();const x=r()*256,y=r()*512,rx=4+r()*16,ry=rx*(1.5+r()*2.5);for(let k=0;k<9;k++){const a=k/9*Math.PI*2,j=.6+r()*.5;c.lineTo(x+Math.cos(a)*rx*j,y+Math.sin(a)*ry*j)}c.fill()}c.globalAlpha=.35;c.strokeStyle='#2F2924';for(let i=0;i<70;i++){c.lineWidth=.6+r()*1.4;c.beginPath();let x=r()*256,y=r()*512;c.moveTo(x,y);for(let k=0;k<6;k++){x+=(r()-.5)*3;y+=8+r()*12;c.lineTo(x,y)}c.stroke()}}const bkT=new T.CanvasTexture(bk);bkT.wrapS=bkT.wrapT=T.RepeatWrapping;bkT.repeat.set(2,1);const trunk=new T.Mesh(new T.CylinderGeometry(.26,.3,1.4,32),new T.MeshStandardMaterial({map:bkT,color:0xD8D0C4,roughness:.92}));trunk.position.y=.55;group.add(trunk);
- const ptsTrue=[],ptsRoot=[];
- roots.forEach((rt,ri)=>{const p=rt.pts;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];lines.forEach(L=>{const va=L.ax==='x'?a.x:a.y,vb=L.ax==='x'?b.x:b.y;if((va-L.v)*(vb-L.v)<0){const t=(L.v-va)/(vb-va);const o=L.ax==='x'?a.y+(b.y-a.y)*t:a.x+(b.x-a.x)*t;if(Math.abs(o)<3.6){ptsTrue.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,d:a.d+(b.d-a.d)*t});ptsRoot.push(ri)}}})}});
- const nFalse=Math.round(ptsTrue.length*.19/.81),ptsFalse=[];for(let i=0;i<nFalse;i++){const L=lines[Math.floor(R()*lines.length)];const o=(R()-.5)*7;ptsFalse.push(L.ax==='x'?{x:L.v,y:o,d:.1+R()*.8}:{x:o,y:L.v,d:.1+R()*.8})}
+ // titik apex: perpotongan akar dengan lintasan (+ ~19% titik palsu), diurutkan menurut urutan pemindaian
+ const rk=li=>rank[Math.floor(li/10)]+(li%10)/10;
+ let ptsTrue=[];roots.forEach((rt,ri)=>{const p=rt.pts;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];lines.forEach((L,li)=>{const va=L.ax==='x'?a.x:a.y,vb=L.ax==='x'?b.x:b.y;if((va-L.v)*(vb-L.v)<0){const t=(L.v-va)/(vb-va);const o=L.ax==='x'?a.y+(b.y-a.y)*t:a.x+(b.x-a.x)*t;if(Math.abs(o)<3.6)ptsTrue.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,d:a.d+(b.d-a.d)*t,root:ri,rk:rk(li)})}})}});
+ const nFalse=Math.round(ptsTrue.length*.19/.81);let ptsFalse=[];for(let i=0;i<nFalse;i++){const li=Math.floor(R()*lines.length),L=lines[li],o=(R()-.5)*7;ptsFalse.push(Object.assign(L.ax==='x'?{x:L.v,y:o}:{x:o,y:L.v},{d:.1+R()*.8,f:1,rk:rk(li)}))}
+ ptsTrue.sort((a,b)=>a.rk-b.rk);ptsFalse.sort((a,b)=>a.rk-b.rk);
+ // penggabungan: titik dalam radius 0,3 m menjadi satu simpul
+ const nodes=[];ptsTrue.concat(ptsFalse).forEach(q=>{let n=nodes.find(n=>(n.x0-q.x)**2+(n.y0-q.y)**2+(n.d0-q.d)**2<.09);if(!n){n={x0:q.x,y0:q.y,d0:q.d,m:[]};nodes.push(n)}n.m.push(q);q.node=n});
+ nodes.forEach(n=>{const k=n.m.length;n.x=n.m.reduce((s,q)=>s+q.x,0)/k;n.y=n.m.reduce((s,q)=>s+q.y,0)/k;n.d=n.m.reduce((s,q)=>s+q.d,0)/k;const tr=n.m.filter(q=>!q.f);n.f=tr.length*2<k;if(tr.length){const c={};tr.forEach(q=>c[q.root]=(c[q.root]||0)+1);n.root=+Object.keys(c).sort((a,b)=>c[b]-c[a])[0]}});
+ const nT=nodes.filter(n=>!n.f),nF=nodes.filter(n=>n.f);
  function cloud(arr,color,size){const g=new T.BufferGeometry(),pos=new Float32Array(arr.length*3);arr.forEach((q,i)=>{const v=P(q.x,q.y,q.d);pos.set([v.x,v.y,v.z],i*3)});g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.PointsMaterial({color,size,sizeAttenuation:true,transparent:true,opacity:0,depthWrite:false});const o=new T.Points(g,m);group.add(o);return o}
- const cTrue=cloud(ptsTrue,0xF2E9DC,.11),cFalse=cloud(ptsFalse,0xF2E9DC,.11);
+ const cTrue=cloud(ptsTrue,0xF2E9DC,.1),cFalse=cloud(ptsFalse,0xF2E9DC,.1),cNT=cloud(nT,0xF6C79A,.18),cNF=cloud(nF,0xF6C79A,.18);
+ const cnt=(arr,v)=>{let lo=0,hi=arr.length;while(lo<hi){const m=(lo+hi)>>1;if(arr[m].rk<v)lo=m+1;else hi=m}return lo};
+ let lastMM=-1;function mergeTo(mm){if(Math.abs(mm-lastMM)<1e-4)return;lastMM=mm;[[cTrue,ptsTrue],[cFalse,ptsFalse]].forEach(([c,arr])=>{const a=c.geometry.attributes.position;arr.forEach((q,i)=>{const v=P(lerp(q.x,q.node.x,mm),lerp(q.y,q.node.y,mm),lerp(q.d,q.node.d,mm));a.setXYZ(i,v.x,v.y,v.z)});a.needsUpdate=true})}
  function segs(pairs,color){const g=new T.BufferGeometry(),pos=new Float32Array(pairs.length*6);pairs.forEach(([a,b],i)=>{const va=P(a.x,a.y,a.d),vb=P(b.x,b.y,b.d);pos.set([va.x,va.y,va.z,vb.x,vb.y,vb.z],i*6)});g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.LineBasicMaterial({color,transparent:true,opacity:0});const l=new T.LineSegments(g,m);group.add(l);return l}
- const all=ptsTrue.concat(ptsFalse),knn=[];all.forEach((a,i)=>{all.map((b,j)=>[j,(a.x-b.x)**2+(a.y-b.y)**2+(a.d-b.d)**2]).filter(q=>q[0]!==i).sort((u,v)=>u[1]-v[1]).slice(0,3).forEach(([j,dd])=>{if(j>i&&dd<1.4)knn.push([a,all[j]])})});
+ const knn=[];nodes.forEach((a,i)=>{nodes.map((b,j)=>[j,(a.x-b.x)**2+(a.y-b.y)**2+(a.d-b.d)**2]).filter(q=>q[0]!==i).sort((u,v)=>u[1]-v[1]).slice(0,3).forEach(([j,dd])=>{if(j>i&&dd<1.4)knn.push([a,nodes[j]])})});
  const gEdges=segs(knn,0x9CC3BD);
- const par=[];ptsTrue.forEach((a,i)=>{const ra=Math.hypot(a.x,a.y);let best=null,bd=1e9;ptsTrue.forEach((b,j)=>{if(ptsRoot[j]!==ptsRoot[i])return;if(Math.hypot(b.x,b.y)>=ra-.05)return;const dd=(a.x-b.x)**2+(a.y-b.y)**2;if(dd<bd){bd=dd;best=b}});par.push([a,best||{x:a.x*.28/ra,y:a.y*.28/ra,d:.1}])});
+ const par=[];nT.forEach(a=>{const ra=Math.hypot(a.x,a.y);let best=null,bd=1e9;nT.forEach(b=>{if(b.root!==a.root||Math.hypot(b.x,b.y)>=ra-.05)return;const dd=(a.x-b.x)**2+(a.y-b.y)**2;if(dd<bd){bd=dd;best=b}});par.push([a,best||{x:a.x*.28/ra,y:a.y*.28/ra,d:.1}])});
  const pEdges=segs(par,0xEF8656);
  const tubes=[],gaps=[],mRoot=new T.MeshStandardMaterial({color:0xA8724D,roughness:.75}),mRoot2=new T.MeshStandardMaterial({color:0x8A5A3A,roughness:.8}),mGap=new T.MeshStandardMaterial({color:0xEF8656,emissive:0xEF8656,emissiveIntensity:.6,roughness:.6});
  roots.forEach(rt=>{const vs=rt.pts.map(q=>P(q.x,q.y,q.d));if(vs.length<3)return;
@@ -930,25 +951,50 @@ let setStep3=()=>{};
    if(gv.length>1){const m=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(gv.length>2?gv:[gv[0],gv[0].clone().lerp(gv[1],.5),gv[1]]),24,.05,8,false),mGap.clone());m.geometry.setDrawRange(0,0);group.add(m);gaps.push(m)}}
   else{const m=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(vs),vs.length*3,.025,6,false),mRoot2);m.geometry.setDrawRange(0,0);group.add(m);tubes.push(m)}});
  scene.add(new T.AmbientLight(0xffffff,.55));const dl=new T.DirectionalLight(0xFFE8D0,1);dl.position.set(4,8,5);scene.add(dl);const dl2=new T.DirectionalLight(0x9CC3BD,.35);dl2.position.set(-5,-2,-4);scene.add(dl2);
+ // jadwal alat: menyapu tiap swath, pindah singkat ke swath berikutnya
+ const TR_=.35,TT=order.length+(order.length-1)*TR_;
+ function sweep(t){const fr=SW.map(()=>0);let pos=null,dir=null;
+  for(let r=0;r<order.length;r++){const si=order[r],[a,b]=ends[si],t0=r*(1+TR_);
+   if(t>=t0+1){fr[si]=1;continue}
+   if(t>=t0){const f=t-t0;fr[si]=f;pos=[lerp(a[0],b[0],f),lerp(a[1],b[1],f)];dir=ends[si];break}
+   const pe=ends[order[r-1]][1],f=clamp((t-(t0-TR_))/TR_);pos=[lerp(pe[0],a[0],f),lerp(pe[1],a[1],f)];dir=[pe,a];break}
+  if(!pos){const e=ends[order[order.length-1]];pos=e[1];dir=e}return{fr,pos,dir}}
+ const red=new T.Color(0xE0705F),warm=new T.Color(0xF6C79A);
  function size(){const r=sec.getBoundingClientRect();W=r.width;H=r.height;renderer.setSize(W,H,false);cam.aspect=W/H;
   if(narrow())cam.setViewOffset(W,H,0,H*.17,W,H);else cam.clearViewOffset();cam.updateProjectionMatrix()}
- size();addEventListener('resize',()=>{size();placeB(prog)});
+ size();addEventListener('resize',()=>{size();cards(prog)});
  let prog=HAS?0:1,idle=0,visible=false;const io=new IntersectionObserver(e=>{visible=e[0].isIntersecting},{threshold:0});io.observe(sec);
- function apply(p){const si=Math.min(N3-1,Math.floor(p*N3*.9999));setStep3(si,p*N3-si);placeB(p);
-  const q=seg01(p,1/N3,1); // fase 3D
-  cv.style.opacity=String(.25+.75*seg01(p,.6/N3,1.2/N3));
-  swMat.opacity=.2*seg01(q,0,.12)*(1-.6*seg01(q,.5,.7));
-  cTrue.material.opacity=seg01(q,.17,.3);cFalse.material.opacity=seg01(q,.17,.3)*(1-.92*seg01(q,.36,.48));cFalse.material.size=.11*(1-.6*seg01(q,.36,.48));
-  gEdges.material.opacity=.45*seg01(q,.34,.42)*(1-seg01(q,.5,.56));
-  pEdges.material.opacity=.95*seg01(q,.5,.6)*(1-.8*seg01(q,.7,.78));
-  const tp=seg01(q,.67,.84);tubes.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*tp/3)*3)});
-  cTrue.material.opacity*=(1-.75*seg01(q,.8,.9));
-  const gp=seg01(q,.85,.97);gaps.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*gp/3)*3);m.material.emissiveIntensity=.9-.6*seg01(q,.95,1)});
-  ringM.opacity=.8*seg01(q,.9,1);return q}
- function render(){requestAnimationFrame(render);if(!visible)return;if(HAS)idle+=.0016;const q=apply(prog);
-  const ang=.9+q*1.9+idle,rad=narrow()?16:12.5,el=.62-q*.18;cam.position.set(Math.sin(ang)*rad*Math.cos(el),Math.sin(el)*rad,Math.cos(ang)*rad*Math.cos(el));cam.lookAt(narrow()?0:-1.4,-.9,0);renderer.render(scene,cam)}
- requestAnimationFrame(render);placeB(prog);
- if(HAS){let target=0;ScrollTrigger.create({trigger:sec,start:'top top',end:()=>'+='+(innerHeight*(narrow()?4.6:5.6)),pin:true,scrub:true,anticipatePin:1,onUpdate:s=>{target=s.progress}});
+ function apply(p){const si=Math.min(N3-1,Math.floor(p*N3*.9999));setStep3(si,p*N3-si);cards(p);
+  const u=[...Array(N3)].map((_,s)=>U(p,s));
+  cv.style.opacity=String(1-(narrow()?0:.5)*seg01(u[1],.05,.3)*(1-seg01(u[2],.72,1)));
+  // 0 · akuisisi
+  const sw=sweep(seg01(u[0],.12,.96)*TT),fade=1-.55*seg01(p,6/N3,7/N3);
+  swM.forEach((m,i)=>{m.scale.z=Math.max(.001,sw.fr[i]*7.2);m.material.opacity=(sw.fr[i]>0?.22:0)*fade});
+  const co=1-seg01(u[1],0,.3);cart.visible=co>.01;cMats.forEach(m=>m.opacity=co);cart.position.set(sw.pos[0],0,sw.pos[1]);cart.rotation.y=yaw(sw.dir);
+  const ph=(performance.now()/700)%1;wave.scale.setScalar(1+ph*3.5);waveM.opacity=(1-ph)*.7*co*(u[0]>.1&&u[0]<.97?1:0);
+  // 3-4 · apex -> koordinat -> sparse point cloud
+  const rv=seg01(u[3],.25,.85)+11*seg01(u[4],.05,.85);
+  cTrue.geometry.setDrawRange(0,cnt(ptsTrue,rv));cFalse.geometry.setDrawRange(0,cnt(ptsFalse,rv));
+  // 5 · merging
+  mergeTo(ease(seg01(u[5],.05,.55)));
+  const raw=(rv>0?1:0)*(1-.85*seg01(u[5],.45,.7));cTrue.material.opacity=raw;cFalse.material.opacity=raw;
+  const no=seg01(u[5],.4,.65);
+  gEdges.material.opacity=.5*seg01(u[5],.6,.9)*(1-seg01(u[6],.55,.9));
+  // 6 · BF-GCN menyaring simpul palsu
+  const k6=seg01(u[6],.1,.4);cNF.material.color.setRGB(lerp(warm.r,red.r,k6),lerp(warm.g,red.g,k6),lerp(warm.b,red.b,k6));
+  cNF.material.opacity=no*(1-seg01(u[6],.45,.85));cNF.material.size=.18*(1-.6*seg01(u[6],.45,.85));
+  // 7 · induk berarah + kurva akar
+  pEdges.material.opacity=.95*seg01(u[7],0,.3)*(1-.75*seg01(u[7],.75,1));
+  const tp=seg01(u[7],.3,.85);tubes.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*tp/3)*3)});
+  cNT.material.opacity=no*(1-.7*seg01(u[7],.6,.95));
+  // 8 · Bio-cGAN
+  const gp=seg01(u[8],.1,.65);gaps.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*gp/3)*3);m.material.emissiveIntensity=.9-.6*seg01(u[8],.75,1)});
+  ringM.opacity=.8*seg01(u[8],.55,.9)}
+ function render(){requestAnimationFrame(render);if(!visible)return;if(HAS)idle+=.0016;apply(prog);
+  const el=lerp(.95,.6,seg01(prog,0,3/N3))-.14*seg01(prog,4/N3,1),ang=.9+prog*2.4+idle,rad=narrow()?19*lerp(1.3,1,seg01(prog,0,3/N3)):12.5*lerp(1.12,1,seg01(prog,0,2/N3));
+  cam.position.set(Math.sin(ang)*rad*Math.cos(el),Math.sin(el)*rad,Math.cos(ang)*rad*Math.cos(el));cam.lookAt(narrow()?0:-1.4,-.9,0);renderer.render(scene,cam)}
+ requestAnimationFrame(render);cards(prog);
+ if(HAS){let target=0;ScrollTrigger.create({trigger:sec,start:'top top',end:()=>'+='+(innerHeight*(narrow()?6.2:7.4)),pin:true,scrub:true,anticipatePin:1,onUpdate:s=>{target=s.progress}});
   gsap.ticker.add(()=>{prog+=(target-prog)*.12})}
  else{apply(1)}
 })();
@@ -959,8 +1005,6 @@ let setStep3=()=>{};
  tabs($('#abcTabs'),[{key:'a',label:'A · BF-GCN'},{key:'b',label:'B · + Bio-cGAN'},{key:'c',label:'C · Final'}],'c',show);show('c')})();
 
 /* ===== sintetis & pohon ===== */
-function vsBars(el,rows){el.innerHTML=rows.map(r=>'<div class="brow"><div class="k">'+r.k+'</div><div class="twin"><div class="track"><div class="fill s" data-w="'+(r.s/r.max*100).toFixed(1)+'"></div></div><div class="track"><div class="fill u" data-w="'+(r.u/r.max*100).toFixed(1)+'"></div></div></div><div class="vv">'+r.fs+'<br><b style="color:var(--bark)">'+r.fu+'</b></div></div>').join('');grow(el)}
-vsBars($('#synBars'),[{k:'Topologi tepat<small>akurasi induk</small>',s:.312,u:.809,max:1,fs:'0,312',fu:'0,809'},{k:'Arah akar di r 0,8 m<small>F1 azimut</small>',s:.761,u:.828,max:1,fs:'0,761',fu:'0,828'},{k:'Selisih bentuk (m)<small>Chamfer, makin pendek makin baik</small>',s:.139,u:.102,max:.15,fs:'0,139',fu:'0,102'}]);
 const TREES=[
  {n:1,id:'AG03',c1:[375,264,50,111],fin:[178,133,6,23,7,61.491,0.409,6],std:[9,51,20,122.954,0.397,9],gal:[3,7],img:'p1'},
  {n:2,id:'AG01',c1:[324,220,52,104],fin:[157,112,8,18,6,58.830,0.396,8],std:[7,38,18,96.983,0.360,7],gal:[5,11]},
@@ -974,9 +1018,9 @@ const TREES=[
  TREES.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML='P'+t.n+'<small>'+t.id+(t.m?' · '+t.m:'')+'</small>';b.setAttribute('aria-pressed',String(i===0));b.setAttribute('aria-label','Pohon '+t.n+' '+t.id);b.addEventListener('click',()=>{[...box.children].forEach(c=>c.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');show(i,true)});box.appendChild(b)});
  function show(i,anim){const t=TREES[i],[a,tp,fp]=t.c1,f=t.fin,s=t.std;
   $('#tstats').innerHTML='<div><b>'+tp+'<span style="display:inline;font-size:.5em;color:var(--ink-2)"> / '+a+'</span></b><span>akar berlabel yang ditemukan model</span></div><div><b>'+fmt(tp/(tp+fp),2)+'</b><span>ketepatan titik di pohon ini</span></div><div><b>'+f[0]+'→'+f[1]+'</b><span>simpul graf → lolos BF-GCN</span></div><div><b>'+(t.gal?t.gal[0]+' / '+t.gal[1]:'—')+'</b><span>'+(t.gal?'akar galian (pohon ini / semua)':'tidak ada data galian')+'</span></div>';
-  const mx=(x,y)=>Math.max(x,y)*1.08;
-  vsBars($('#treeBars'),[{k:'Akar primer',s:s[0],u:f[2],max:mx(s[0],f[2]),fs:s[0],fu:f[2]},{k:'Akar sekunder',s:s[1],u:f[3],max:mx(s[1],f[3]),fs:s[1],fu:f[3]},{k:'Akar tersier',s:s[2],u:f[4],max:mx(s[2],f[4]),fs:s[2],fu:f[4]},{k:'Panjang total (m)',s:s[3],u:f[5],max:mx(s[3],f[5]),fs:fmt(s[3],1),fu:fmt(f[5],1)},{k:'Akar di cincin r 0,8 m',s:s[5],u:f[7],max:mx(s[5],f[7]),fs:s[5],fu:f[7]}]);
-  $('#treeImgs').innerHTML=t.img?'<figure><div class="plate"><img src="img/'+t.img+'_multi.jpg" alt="Pohon '+t.n+': perspektif 3D, tampak atas, peta sumbu dan tampak samping" width="1400" height="946" loading="lazy"></div><figcaption>Hasil final: perspektif 3D, tampak atas dengan swath dan 36 titik galian, peta sumbu, tampak samping.</figcaption></figure><figure><div class="plate"><img src="img/'+t.img+'_enam.jpg" alt="Pohon '+t.n+' dari enam sudut" width="1400" height="873" loading="lazy"></div><figcaption>Enam sudut pandang (skala tegak diperbesar).</figcaption></figure>':'<p class="note" style="grid-column:1/-1">Gambar 3D lengkap tersedia untuk Pohon 1 dan Pohon 3. Usulan membuat lebih sedikit cabang pendek karena induk tiap simpul dipilih, bukan diambil dari jalur terpendek.</p>';
+  const mx=i=>Math.max(...TREES.map(q=>q.fin[i]))*1.08,row=(k,i,txt)=>'<div class="brow hl"><div class="k">'+k+'</div><div class="track"><div class="fill" data-w="'+(f[i]/mx(i)*100).toFixed(1)+'"></div></div><div class="v">'+txt+'</div></div>';
+  $('#treeBars').innerHTML=row('Akar primer',2,f[2])+row('Akar sekunder',3,f[3])+row('Akar tersier',4,f[4])+row('Panjang total (m)',5,fmt(f[5],1))+row('Akar di cincin r 0,8 m',7,f[7]);grow($('#treeBars'));
+  $('#treeImgs').innerHTML=t.img?'<figure><div class="plate"><img src="img/'+t.img+'_multi.jpg" alt="Pohon '+t.n+': perspektif 3D, tampak atas, peta sumbu dan tampak samping" width="1400" height="946" loading="lazy"></div><figcaption>Hasil final: perspektif 3D, tampak atas dengan swath dan 36 titik galian, peta sumbu, tampak samping.</figcaption></figure><figure><div class="plate"><img src="img/'+t.img+'_enam.jpg" alt="Pohon '+t.n+' dari enam sudut" width="1400" height="873" loading="lazy"></div><figcaption>Enam sudut pandang (skala tegak diperbesar).</figcaption></figure>':'<p class="note" style="grid-column:1/-1">Gambar 3D lengkap tersedia untuk Pohon 1 dan Pohon 3.</p>';
   if(anim&&HAS)gsap.from('#tstats b',{y:16,opacity:0,duration:.6,ease:'expo.out',stagger:.05})}
  show(0,false)})();
 
