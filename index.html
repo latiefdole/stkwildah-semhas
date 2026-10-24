@@ -255,6 +255,13 @@ figure figcaption{font-size:13.5px;color:var(--ink-2);margin-top:8px}
 .score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
 .score div{background:var(--card);padding:14px}
 .score b{display:block;font-family:var(--f-display);font-size:42px;font-weight:800;font-variation-settings:"wdth" 78;line-height:1;color:var(--forest)}
+.score b.miss{color:#E0705F}.score b.fp{color:var(--ink-2)}
+.hint{font-size:13.5px;color:var(--ink-2);line-height:1.45}
+.gsum{font-size:18px;line-height:1.4}.gsum b{color:var(--forest)}
+.glegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin:18px auto 0;max-width:560px;font-size:13.5px;line-height:1.3;color:var(--ink-2)}
+.glegend span{display:flex;gap:10px;align-items:center}.glegend svg{flex:none;width:34px;height:24px}
+.glegend .gh{grid-column:1/-1;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-top:4px}
+@media (max-width:560px){.glegend{grid-template-columns:1fr}#galian table{font-size:13px}#galian th{font-size:9.5px;letter-spacing:.03em;padding-inline:4px}#galian td{padding-inline:4px}#galian td:first-child{white-space:nowrap}}
 .score span{font-size:12.5px;color:var(--ink-2)}
 table{border-collapse:collapse;width:100%;font-size:14.5px}
 th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}
@@ -278,7 +285,14 @@ tr.cur td{color:var(--bark);font-weight:600}
 .why div p{color:var(--ink-2);font-size:15.5px}
 
 footer{padding-block:80px 64px;background:var(--mist)}
-footer .in{display:grid;grid-template-columns:minmax(0,1fr);gap:48px;max-width:900px}
+footer .in{display:flex;flex-direction:column;gap:36px;max-width:1100px}
+.fhead{display:flex;flex-direction:column;gap:8px}.fhead h2{margin-bottom:2px}.fhead p{font-size:15.5px}
+.fcols{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:40px;padding-top:28px;border-top:1px solid var(--line)}
+@media (max-width:800px){.fcols{grid-template-columns:1fr;gap:32px}}
+.flist{margin:14px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:14px;font-size:15.5px;line-height:1.35}
+ol.flist{counter-reset:f}ol.flist li{counter-increment:f;display:grid;grid-template-columns:30px minmax(0,1fr)}ol.flist li::before{content:counter(f);font-family:var(--f-mono);color:var(--bark);font-weight:600}
+.flist small{display:block;color:var(--ink-2);font-size:13px;margin-top:2px}
+ul.flist li{position:relative;padding-left:18px}ul.flist li::before{content:"";position:absolute;left:0;top:.55em;width:6px;height:6px;border-radius:50%;background:var(--forest)}
 @media (max-width:800px){footer .in{grid-template-columns:1fr}}
 footer h2{font-size:clamp(32px,4vw,52px);font-variation-settings:"wdth" 82;line-height:.95;margin-bottom:16px}
 footer details{border-top:1px solid var(--line);padding-block:14px}
@@ -288,7 +302,7 @@ footer summary::-webkit-details-marker{display:none}
 footer summary::after{content:"+";font-family:var(--f-mono);color:var(--bark)}
 footer details[open] summary::after{content:"–"}
 footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
-.refs{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--ink-2)}
+.refs{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--ink-2);padding-top:28px;border-top:1px solid var(--line)}
 .credit{font-size:15px;display:flex;flex-direction:column;gap:6px}
 
 /* adegan 3D (dipin) */
@@ -554,16 +568,17 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 
 <!-- ================= GALIAN ================= -->
 <section class="ch" id="galian"><div class="in">
-<div class="ch-head rv"><span class="kicker"><b>05 · Bukti lapangan</b></span><h2>Dicocokkan dengan galian.</h2><p>Pada lima pohon, akar pernah digali di cincin 0,8 m dari batang (Taufiqurahman, 2025). Cincin dibagi 36 titik, titik 1 di utara. Pilih pohon untuk melihat akar mana yang bertemu.</p></div>
+<div class="ch-head rv"><span class="kicker"><b>05 · Bukti lapangan</b></span><h2>Dicocokkan dengan galian.</h2><p>Pada lima pohon, akar pernah digali di cincin 0,8 m dari batang (Taufiqurahman, 2025). Lingkaran di bawah adalah cincin galian itu dilihat dari atas: 36 titik searah jarum jam, titik 1 di utara. Pilih pohon untuk membandingkan akar hasil model dengan akar hasil galian.</p></div>
 <div class="gal">
-<div class="ring" id="ring"></div>
+<div class="ringbox"><div class="ring" id="ring"></div><div class="glegend" id="gLegend"></div></div>
 <div class="ctrls">
-<div class="ctrl"><span class="kicker">Pohon</span><div class="tabs" id="gTree"></div></div>
-<div class="ctrl"><span class="kicker">Akar galian</span><div class="tabs" id="gSet"></div></div>
-<div class="ctrl"><span class="kicker">Toleransi</span><div class="tabs" id="gTol"></div></div>
+<div class="ctrl"><span class="kicker">1 · Pilih pohon</span><div class="tabs" id="gTree"></div></div>
+<div class="ctrl"><span class="kicker">2 · Akar galian yang dibandingkan</span><div class="tabs" id="gSet"></div><p class="hint" id="gSetHint"></p></div>
+<div class="ctrl"><span class="kicker">3 · Kapan dianggap cocok</span><div class="tabs" id="gTol"></div><p class="hint" id="gTolHint"></p></div>
+<p class="gsum" id="gSum"></p>
 <div class="score" id="score"></div>
-<p class="note" id="ringText" style="font-size:15px"></p>
-<table><thead><tr><th>Pohon 1–5, total</th><th class="n">TP</th><th class="n">FP</th><th class="n">FN</th><th class="n">F1</th></tr></thead><tbody id="tot"></tbody></table>
+<table><thead><tr><th>Total 5 pohon</th><th class="n">Ditemukan</th><th class="n">Terlewat</th><th class="n">Tanpa pasangan</th><th class="n">F1</th></tr></thead><tbody id="tot"></tbody></table>
+<p class="hint">Total dihitung dengan pilihan 2 dan 3 di atas.</p>
 </div>
 </div>
 </div></section>
@@ -583,9 +598,21 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 </div></section>
 
 <footer><div class="in">
-<div style="display:flex;flex-direction:column;gap:18px">
-<h2>Siti Khotimatul Wildah</h2><span class="kicker" style="margin-top:-10px">NIM G6601231010</span>
-<div class="credit"><span>Program Studi Doktor Ilmu Komputer, Sekolah Sains Data, Matematika, dan Informatika, IPB University</span><span class="dim">Komisi pembimbing: Prof. Dr. Ir. Agus Buono, M.Si., M.Kom. (Ketua) · Dr. Ir. Aziz Kustiyo, M.Kom. · Dr. Shelvie Nidya Neyman, S.Kom., M.Si. · Prof. Dr. Lina Karlinasari, S.Hut., M.Sc.F.Trop.</span><span class="dim">Poster Session SPs IPB · Senin, 2 November 2026</span><span class="dim">Terima kasih: HPGW, PT Exact Global Teknologi (data GPR), M. Taufiqurahman (data galian).</span></div>
+<div class="fhead"><h2>Siti Khotimatul Wildah</h2><span class="kicker">NIM G6601231010</span><p>Program Studi Doktor Ilmu Komputer, Sekolah Sains Data, Matematika, dan Informatika, IPB University</p><p class="dim">Poster Session SPs IPB · Senin, 2 November 2026</p></div>
+<div class="fcols">
+<div><span class="kicker">Komisi pembimbing</span><ol class="flist">
+<li><div>Prof. Dr. Ir. Agus Buono, M.Si., M.Kom<small>Ketua Komisi</small></div></li>
+<li><div>Dr. Aziz Kustiyo, S.Si, M.Kom<small>Anggota</small></div></li>
+<li><div>Dr. Shelvie Nidya Neyman, S.Kom, M.Si<small>Anggota</small></div></li>
+<li><div>Prof. Dr. Lina Karlinasari, S.Hut, M.Sc.F.Trop., IPU, ASEAN Eng<small>Anggota</small></div></li>
+</ol></div>
+<div><span class="kicker">Terima kasih</span><ul class="flist">
+<li>Hutan Pendidikan Gunung Walat (HPGW) IPB</li>
+<li>PT Exact Global Teknologi <small>Data GPR</small></li>
+<li>M. Taufiqurahman <small>Data penggalian</small></li>
+<li>Beasiswa Pendidikan Indonesia (BPI)</li>
+</ul></div>
+</div>
 <div class="refs"><span class="kicker">Referensi utama</span>
 <span>Lin TY, Goyal P, Girshick R, He K, Dollár P. 2017. Focal loss for dense object detection. ICCV.</span>
 <span>Kipf TN, Welling M. 2017. Semi-supervised classification with graph convolutional networks. ICLR.</span>
@@ -593,7 +620,6 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <span>Lu G, Lu Y. 2022. 3D modeling beneath ground: plant root detection and reconstruction based on ground-penetrating radar. WACV.</span>
 <span>Zhou Y, Lu G. 2026. Underground plant exploration: non-destructive 3D root assessment with GPR based on point graph neural network. CVPR.</span>
 <span>Taufiqurahman M. 2025. Validasi distribusi radial akar pohon Agathis yang diuji menggunakan alat nondestruktif root detector [tesis]. IPB University.</span></div>
-</div>
 </div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -958,33 +984,51 @@ const TREES=[
 const GAL={1:{c:[7,26,27],l:[6,15,18,24]},2:{c:[2,14,15,21,22],l:[18,19,24,27,31,36]},3:{c:[1,9,10,14,29,33,34],l:[5,25]},4:{c:[3,4,11,12,20,28],l:[1,2,23]},5:{c:[3,4,5,8,14,15,17,18,29,34,36],l:[1,2,9,10,19,21,22,27,35]}};
 const REC={std:{1:[7,10,13,16,20,25,29,32,35],2:[4,8,12,15,21,24,32],3:[5,9,11,14,18,22,26,30,33],4:[2,5,8,12,22,32,35],5:[6,15,19,28,34,36]},usu:{1:[7,13,16,23,27,36],2:[2,7,11,14,17,21,24,30],3:[4,7,11,14,18,24,27,30,33],4:[5,8,12,31,35],5:[1,4,15,19,28,30]}};
 const G={tree:1,m:'usu',set:'c',tol:1};
+const TID=['','AG03','AG01','AG04','AG05','AG06'];
 const dist=(p,q)=>Math.min(Math.abs(p-q),36-Math.abs(p-q));
 function match(P,T,tol){const m=new Map();function aug(p,seen){for(const q of T){if(dist(p,q)<=tol&&!seen.has(q)){seen.add(q);if(!m.has(q)||aug(m.get(q),seen)){m.set(q,p);return true}}}return false}P.forEach(p=>aug(p,new Set()));return m}
 const targets=t=>G.set==='c'?GAL[t].c.slice():GAL[t].c.concat(GAL[t].l);
 function counts(t,meth){const P=REC[meth][t],T=targets(t),m=match(P,T,G.tol);return{tp:m.size,fp:P.length-m.size,fn:T.length-m.size,m}}
 const f1=(a,b,c)=>{const p=a/Math.max(a+b,1),r=a/Math.max(a+c,1);return p+r?2*p*r/(p+r):0};
+// warna: hijau = cocok, merah = akar galian terlewat, abu = akar model tanpa pasangan
+const GC={ok:'#8CC59A',okInk:'#10170F',miss:'#E0705F',fp:'#8B7B6C',empty:'#2A2019',emptyLine:'#47362A'};
+const ico={
+ ok:'<svg viewBox="0 0 34 24"><line x1="2" y1="12" x2="32" y2="12" stroke="'+GC.ok+'" stroke-width="6" stroke-linecap="round"/></svg>',
+ fp:'<svg viewBox="0 0 34 24"><line x1="2" y1="12" x2="32" y2="12" stroke="'+GC.fp+'" stroke-width="4" stroke-linecap="round" stroke-dasharray="7 5"/></svg>',
+ found:'<svg viewBox="0 0 34 24"><circle cx="17" cy="12" r="10" fill="'+GC.ok+'"/><path d="M12 12.5l3.2 3.2 6.6-7" fill="none" stroke="'+GC.okInk+'" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+ miss:'<svg viewBox="0 0 34 24"><circle cx="17" cy="12" r="9.5" fill="#2A1714" stroke="'+GC.miss+'" stroke-width="3"/><path d="M13.5 8.5l7 7m0-7l-7 7" stroke="'+GC.miss+'" stroke-width="2.4" stroke-linecap="round"/></svg>',
+ nb:'<svg viewBox="0 0 34 24"><rect x="7.5" y="2.5" width="19" height="19" rx="4" fill="none" stroke="#BFAE98" stroke-width="2.5"/></svg>',
+ empty:'<svg viewBox="0 0 34 24"><circle cx="17" cy="12" r="6" fill="'+GC.empty+'" stroke="'+GC.emptyLine+'" stroke-width="2"/></svg>'};
+function drawLegend(){const L=(i,t)=>'<span>'+ico[i]+t+'</span>';
+ $('#gLegend').innerHTML='<div class="gh">Garis = akar hasil model</div>'+L('ok','Cocok dengan akar galian')+L('fp','Tidak ada pasangannya di galian')
+  +'<div class="gh">Penanda di cincin = akar hasil galian</div>'+L('found','Ditemukan oleh model')+L('miss','Terlewat (tidak ditemukan model)')
+  +(G.set==='a'?L('nb','Bentuk kotak: akar pohon tetangga'):'')+L('empty','Titik cincin tanpa akar galian')}
 function drawRing(anim){
  const S=560,c=S/2,R=196,t=G.tree,g=GAL[t],P=REC[G.m][t],{tp,fp,fn,m}=counts(t,G.m),T=targets(t),mt=new Set(m.keys()),mp=new Set(m.values());
  const pt=(k,r)=>{const a=(k-1)*10*Math.PI/180;return[c+r*Math.sin(a),c-r*Math.cos(a)]};
- let s='<svg viewBox="-20 -20 '+(S+40)+' '+(S+40)+'" role="img" aria-label="Cincin galian pohon '+t+'">';
+ let s='<svg viewBox="-20 -20 '+(S+40)+' '+(S+40)+'" role="img" aria-label="Cincin galian pohon '+t+': '+tp+' akar galian ditemukan, '+fn+' terlewat, '+fp+' akar model tanpa pasangan">';
  s+='<defs><radialGradient id="soil"><stop offset="0" stop-color="#3A2A1F"/><stop offset="1" stop-color="#1B140F"/></radialGradient></defs><circle cx="'+c+'" cy="'+c+'" r="'+(R+40)+'" fill="url(#soil)"/><circle cx="'+c+'" cy="'+c+'" r="'+R+'" fill="none" stroke="#47362A" stroke-width="2" stroke-dasharray="3 6"/>';
  [['U',1],['T',10],['S',19],['B',28]].forEach(([l,k])=>{const[x,y]=pt(k,R+64);s+='<text x="'+x+'" y="'+(y+6)+'" text-anchor="middle" fill="#BFAE98" font-size="17">'+l+'</text>'});
- P.forEach(k=>{const[x,y]=pt(k,R+30);const[x0,y0]=pt(k,44);s+='<line class="spoke" x1="'+x0+'" y1="'+y0+'" x2="'+x+'" y2="'+y+'" stroke="'+(mp.has(k)?'#EF8656':'#8A5A3A')+'" stroke-width="'+(mp.has(k)?8:6)+'" stroke-linecap="round"/>'});
- s+='<circle cx="'+c+'" cy="'+c+'" r="44" fill="#5A3A26"/><circle cx="'+c+'" cy="'+c+'" r="44" fill="none" stroke="#7A5038" stroke-width="3"/>';
- for(let k=1;k<=36;k++){const[x,y]=pt(k,R);const isC=g.c.includes(k),isL=g.l.includes(k),isT=T.includes(k);let fill='#211812',stroke='#47362A',tc='#BFAE98';
-  if(isC){fill='#F2E9DC';stroke='#F2E9DC';tc='#16100C'}else if(isL){if(G.set==='a'){fill='#9CC3BD';stroke='#9CC3BD';tc='#16100C'}else stroke='#9CC3BD'}
-  s+='<g class="dot"><circle cx="'+x+'" cy="'+y+'" r="13" fill="'+fill+'" stroke="'+stroke+'" stroke-width="2"/>';
-  if(isT&&!mt.has(k))s+='<circle cx="'+x+'" cy="'+y+'" r="19" fill="none" stroke="#E0705F" stroke-width="2.5" stroke-dasharray="4 4"/>';
-  if(isT&&mt.has(k))s+='<circle cx="'+x+'" cy="'+y+'" r="19" fill="none" stroke="#EF8656" stroke-width="3.5"/>';
-  s+='<text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="11" fill="'+tc+'">'+k+'</text></g>'}
- $('#ring').innerHTML=s+'</svg>';
+ // garis akar hasil model (hijau bila cocok; abu putus-putus bila tanpa pasangan)
+ P.forEach(k=>{const ok=mp.has(k),[x,y]=pt(k,R+30),[x0,y0]=pt(k,44);s+='<line class="spoke" x1="'+x0+'" y1="'+y0+'" x2="'+x+'" y2="'+y+'" stroke="'+(ok?GC.ok:GC.fp)+'" stroke-width="'+(ok?8:5)+'" stroke-linecap="round"'+(ok?'':' stroke-dasharray="14 9"')+'><title>Akar hasil model di titik '+k+(ok?': cocok dengan akar galian':': tidak ada pasangan di galian')+'</title></line>'});
+ // penghubung bila pasangan bergeser satu titik
+ m.forEach((p,q)=>{if(p!==q){const[x1,y1]=pt(p,R+30),[x2,y2]=pt(q,R+21);s+='<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+GC.ok+'" stroke-width="3" stroke-linecap="round" stroke-dasharray="2 5"/>'}});
+ s+='<circle cx="'+c+'" cy="'+c+'" r="44" fill="#5A3A26"/><circle cx="'+c+'" cy="'+c+'" r="44" fill="none" stroke="#7A5038" stroke-width="3"/><text x="'+c+'" y="'+(c+5)+'" text-anchor="middle" font-size="13" fill="#F2E9DC">batang</text>';
+ for(let k=1;k<=36;k++){const[x,y]=pt(k,R),isT=T.includes(k),nb=isT&&!g.c.includes(k),found=mt.has(k);
+  if(!isT){s+='<g class="dot"><circle cx="'+x+'" cy="'+y+'" r="9" fill="'+GC.empty+'" stroke="'+GC.emptyLine+'" stroke-width="1.5"/><text x="'+x+'" y="'+(y+3.5)+'" text-anchor="middle" font-size="9" fill="#7E6E5E">'+k+'</text><title>Titik '+k+': tidak ada akar galian</title></g>';continue}
+  const sh=(r,fill,stroke,sw)=>nb?'<rect x="'+(x-r)+'" y="'+(y-r)+'" width="'+2*r+'" height="'+2*r+'" rx="5" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>':'<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';
+  s+='<g class="dot">'+(found?sh(16,GC.ok,GC.ok,2):sh(15,'#2A1714',GC.miss,3.5))+'<text x="'+x+'" y="'+(y+4.5)+'" text-anchor="middle" font-size="13" font-weight="600" fill="'+(found?GC.okInk:GC.miss)+'">'+k+'</text><title>Titik '+k+': akar galian '+(nb?'pohon tetangga':'pohon ini')+(found?' — ditemukan model':' — terlewat')+'</title></g>'}
+ $('#ring').innerHTML=s+'</svg>';drawLegend();
  if(anim&&HAS){gsap.from('#ring .spoke',{attr:{x2:c,y2:c},duration:.9,ease:'expo.out',stagger:.05});gsap.from('#ring .dot',{scale:.4,opacity:0,transformOrigin:'50% 50%',duration:.4,ease:'back.out(2)',stagger:.01})}
- $('#score').innerHTML='<div><b>'+tp+'</b><span>akar galian ditemukan</span></div><div><b>'+fp+'</b><span>akar rekonstruksi tanpa pasangan</span></div><div><b>'+fn+'</b><span>akar galian terlewat</span></div>';
- $('#ringText').textContent='Pohon '+t+' ('+['','AG03','AG01','AG04','AG05','AG06'][t]+'): '+T.length+' akar galian, '+P.length+' akar rekonstruksi. Garis oranye = akar rekonstruksi yang bertemu akar galian; cincin putus-putus = akar galian yang terlewat. Titik putih = akar pohon ini, biru-hijau = akar pohon lain. Toleransi '+(G.tol?'±1 titik (±10°).':'tepat di titik yang sama.');
- let tb='';[['usu','BF-GCN + Bio-cGAN (usulan)']].forEach(([k,lab])=>{let a=0,b=0,d=0;for(let q=1;q<=5;q++){const r=counts(q,k);a+=r.tp;b+=r.fp;d+=r.fn}tb+='<tr><td>'+lab+'</td><td class="n">'+a+'</td><td class="n">'+b+'</td><td class="n">'+d+'</td><td class="n">'+fmt(f1(a,b,d))+'</td></tr>'});$('#tot').innerHTML=tb}
-tabs($('#gTree'),[1,2,3,4,5].map(k=>({key:k,label:'P'+k+' · '+['','AG03','AG01','AG04','AG05','AG06'][k]})),1,k=>{G.tree=k;drawRing(true)});
-tabs($('#gSet'),[{key:'c',label:'Pohon ini'},{key:'a',label:'Semua akar'}],'c',k=>{G.set=k;drawRing(false)});
-tabs($('#gTol'),[{key:1,label:'±1 titik'},{key:0,label:'Tepat'}],1,k=>{G.tol=k;drawRing(false)});
+ $('#gSum').innerHTML='Pohon '+t+' ('+TID[t]+'): model menemukan <b>'+tp+' dari '+T.length+'</b> akar galian'+(G.set==='a'?' (termasuk akar pohon tetangga)':'')+'. Model menggambar '+P.length+' akar; '+fp+' di antaranya tidak punya pasangan di galian.';
+ $('#score').innerHTML='<div><b>'+tp+'</b><span>akar galian ditemukan model</span></div><div><b class="miss">'+fn+'</b><span>akar galian terlewat</span></div><div><b class="fp">'+fp+'</b><span>akar model tanpa pasangan di galian</span></div>';
+ $('#gSetHint').textContent=G.set==='c'?'Hanya akar yang dipastikan milik pohon ini.':'Saat digali, ikut ditemukan akar dari pohon di sebelahnya (penanda kotak). Pilihan ini ikut menghitungnya.';
+ $('#gTolHint').textContent=G.tol?'Akar model dianggap cocok bila jatuh di titik yang sama atau satu titik di sebelahnya (±10°). Garis titik-titik hijau menunjukkan pasangan yang bergeser.':'Akar model hanya dianggap cocok bila jatuh tepat di titik yang sama.';
+ let a=0,b=0,d=0;for(let q=1;q<=5;q++){const r=counts(q,G.m);a+=r.tp;b+=r.fp;d+=r.fn}
+ $('#tot').innerHTML='<tr><td>BF-GCN + Bio-cGAN</td><td class="n">'+a+'</td><td class="n">'+d+'</td><td class="n">'+b+'</td><td class="n">'+fmt(f1(a,b,d))+'</td></tr>'}
+tabs($('#gTree'),[1,2,3,4,5].map(k=>({key:k,label:'Pohon '+k+' · '+TID[k]})),1,k=>{G.tree=k;drawRing(true)});
+tabs($('#gSet'),[{key:'c',label:'Akar pohon ini'},{key:'a',label:'+ akar pohon tetangga'}],'c',k=>{G.set=k;drawRing(false)});
+tabs($('#gTol'),[{key:1,label:'Longgar · ±1 titik'},{key:0,label:'Ketat · titik sama'}],1,k=>{G.tol=k;drawRing(false)});
 drawRing(false);
 if(HAS){const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();drawRing(true)}},{threshold:.35});io.observe($('#ring'))}
 
