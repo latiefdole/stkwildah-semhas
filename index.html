@@ -609,7 +609,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <span>Goodfellow I, et al. 2014. Generative adversarial nets. NeurIPS.</span>
 <span>Lu G, Lu Y. 2022. 3D modeling beneath ground: plant root detection and reconstruction based on ground-penetrating radar. WACV.</span>
 <span>Zhou Y, Lu G. 2026. Underground plant exploration: non-destructive 3D root assessment with GPR based on point graph neural network. CVPR.</span>
-<span>Taufiqurrachman M. 2025. Validasi Distribusi Radial Akar Pohon Agathis (<i>Agathis loranthifolia</i> Salisb.) yang Diuji Menggunakan Alat Nondestruktif Root Detector [tesis]. Bogor: IPB University.</span></div>
+<span>Taufiqurrachman M. 2025. Validasi Distribusi Radial Akar Pohon Agathis (<i>Agathis loranthifolia</i> Salisb.) yang Diuji Menggunakan Alat Nondestruktif Root Detector [tesis]. Bogor (ID): IPB University.</span></div>
 </div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -1002,7 +1002,7 @@ const TREES=[
 (function(){const box=$('#trees');
  TREES.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML='P'+t.n+'<small>'+t.id+(t.m?' · '+t.m:'')+'</small>';b.setAttribute('aria-pressed',String(i===0));b.setAttribute('aria-label','Pohon '+t.n+' '+t.id);b.addEventListener('click',()=>{[...box.children].forEach(c=>c.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');show(i,true)});box.appendChild(b)});
  function show(i,anim){const t=TREES[i],[a,tp,fp]=t.c1,f=t.fin;
-  $('#tstats').innerHTML='<div><b>'+tp+'<span style="display:inline;font-size:.5em;color:var(--ink-2)"> / '+a+'</span></b><span>akar berlabel yang ditemukan model</span></div><div><b>'+fmt(tp/(tp+fp),2)+'</b><span>ketepatan titik di pohon ini</span></div><div><b>'+f[0]+'→'+f[1]+'</b><span>simpul graf → lolos BF-GCN</span></div><div><b>'+(t.gal?t.gal[0]+' / '+t.gal[1]:'—')+'</b><span>'+(t.gal?'akar galian (pohon ini / semua)':'tidak ada data galian')+'</span></div>';
+  $('#tstats').innerHTML='<div><b>±'+Math.round(tp/a*100)+'%</b><span>akar berlabel yang ditemukan model</span></div><div><b>±'+Math.round(tp/(tp+fp)*100)+'%</b><span>ketepatan titik di pohon ini</span></div><div><b>'+f[0]+'→'+f[1]+'</b><span>simpul graf → lolos BF-GCN</span></div><div><b>'+(t.gal?t.gal[0]+' / '+t.gal[1]:'—')+'</b><span>'+(t.gal?'akar galian (pohon ini / semua)':'tidak ada data galian')+'</span></div>';
   const mx=i=>Math.max(...TREES.map(q=>q.fin[i]))*1.08,row=(k,i,txt)=>'<div class="brow hl"><div class="k">'+k+'</div><div class="track"><div class="fill" data-w="'+(f[i]/mx(i)*100).toFixed(1)+'"></div></div><div class="v">'+txt+'</div></div>';
   $('#treeBars').innerHTML=row('Akar primer',2,f[2])+row('Akar sekunder',3,f[3])+row('Akar tersier',4,f[4])+row('Panjang total (m)',5,fmt(f[5],1))+row('Akar di cincin r 0,8 m',7,f[7]);grow($('#treeBars'));
   $('#treeImgs').innerHTML=t.img?'<figure><div class="plate"><img src="img/'+t.img+'_multi.jpg" alt="Pohon '+t.n+': perspektif 3D, tampak atas, peta sumbu dan tampak samping" width="1400" height="946" loading="lazy"></div><figcaption>Hasil final: perspektif 3D, tampak atas dengan swath dan 36 titik galian, peta sumbu, tampak samping.</figcaption></figure><figure><div class="plate"><img src="img/'+t.img+'_enam.jpg" alt="Pohon '+t.n+' dari enam sudut" width="1400" height="873" loading="lazy"></div><figcaption>Enam sudut pandang (skala tegak diperbesar).</figcaption></figure>':'<p class="note" style="grid-column:1/-1">Gambar 3D lengkap tersedia untuk Pohon 1 dan Pohon 3.</p>';
