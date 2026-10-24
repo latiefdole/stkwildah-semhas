@@ -568,7 +568,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <p class="gsum" id="gSum"></p>
 <div class="score" id="score"></div>
 <table><thead><tr><th></th><th class="n">Ditemukan</th><th class="n">Terlewat</th><th class="n">Tanpa pasangan</th></tr></thead><tbody id="tot"></tbody></table>
-<p class="hint">Dibandingkan dengan akar galian milik pohon ini. Akar model dianggap cocok bila jatuh di titik yang sama atau satu titik di sebelahnya (±10°); garis titik-titik hijau menunjukkan pasangan yang bergeser.</p>
+<p class="hint">Dibandingkan dengan semua akar galian di cincin, termasuk akar pohon tetangga (kotak). Akar model dianggap cocok bila jatuh di titik yang sama atau satu titik di sebelahnya (±10°); garis titik-titik hijau menunjukkan pasangan yang bergeser.</p>
 </div>
 </div>
 </div></section>
@@ -1012,7 +1012,7 @@ const TREES=[
 /* ===== galian ===== */
 const GAL={1:{c:[7,26,27],l:[6,15,18,24]},2:{c:[2,14,15,21,22],l:[18,19,24,27,31,36]},3:{c:[1,9,10,14,29,33,34],l:[5,25]},4:{c:[3,4,11,12,20,28],l:[1,2,23]},5:{c:[3,4,5,8,14,15,17,18,29,34,36],l:[1,2,9,10,19,21,22,27,35]}};
 const REC={usu:{1:[7,13,16,23,27,36],2:[2,7,11,14,17,21,24,30],3:[4,7,11,14,18,24,27,30,33],4:[5,8,12,31,35],5:[1,4,15,19,28,30]}};
-const G={tree:1,m:'usu',set:'c',tol:1};
+const G={tree:1,m:'usu',set:'a',tol:1};
 const TID=['','AG03','AG01','AG04','AG05','AG06'];
 const dist=(p,q)=>Math.min(Math.abs(p-q),36-Math.abs(p-q));
 function match(P,T,tol){const m=new Map();function aug(p,seen){for(const q of T){if(dist(p,q)<=tol&&!seen.has(q)){seen.add(q);if(!m.has(q)||aug(m.get(q),seen)){m.set(q,p);return true}}}return false}P.forEach(p=>aug(p,new Set()));return m}
