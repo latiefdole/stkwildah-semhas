@@ -1,0 +1,973 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Akar 3D dari Radargram GPR</title>
+<meta name="description" content="Seminar Hasil S. K. Wildah (IPB University): membaca arsitektur akar Agathis dalam 3D dari radargram GPR dengan computer vision.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wdth,wght@12..96,75..100,300..800&family=Instrument+Sans:ital,wght@0,400..700;1,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+body{margin:0;padding:0}img{max-width:100%}[hidden]{display:none!important}
+/* Layout: a story told in pinned "scenes" (stage + caption) on a dark loam ground; leaf greens and Agathis-bark orange as accents. Deliberate single dark look. */
+:root{
+  --paper:#16100C; --card:#211812; --mist:#2C2119; --ink:#F2E9DC; --ink-2:#BFAE98; --line:#47362A;
+  --forest:#8CC59A; --leaf:#7FB37A; --moss:#9CC3BD; --sky:#1B1410;
+  --bark:#EF8656; --bark-soft:#3A2618; --soil:#3A2A1F; --soil-2:#2C2119; --root:#C98B5E;
+  --f-display:'Bricolage Grotesque','Arial Narrow',Arial,sans-serif;
+  --f-body:'Instrument Sans','Segoe UI',Roboto,Arial,sans-serif;
+  --f-mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  --gl:max(20px,env(safe-area-inset-left,0px)); --gr:max(20px,env(safe-area-inset-right,0px));
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{background:var(--paper)}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:50;background:var(--paper)}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;z-index:60;opacity:.06;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+h1,h2,h3,h4{font-family:var(--f-display);margin:0;text-wrap:balance;font-weight:700;letter-spacing:-.02em}
+p{margin:0}
+a{color:var(--bark)}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--bark);outline-offset:3px;border-radius:4px}
+.in{max-width:1240px;margin:0 auto;padding-left:var(--gl);padding-right:var(--gr)}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+.kicker{font-family:var(--f-mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-2)}
+.kicker b{color:var(--bark);font-weight:600}
+.dim{color:var(--ink-2)}
+.w{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.06em;margin-bottom:-.06em}
+.w>span{display:inline-block}
+
+/* ---------- top bar ---------- */
+.bar{position:fixed;top:env(safe-area-inset-top,0px);left:0;right:0;z-index:40;pointer-events:none}
+.bar .in{display:flex;justify-content:space-between;align-items:center;padding-block:12px}
+.brand{font-family:var(--f-mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;pointer-events:auto;color:var(--ink);text-decoration:none;background:color-mix(in oklab,var(--paper) 80%,transparent);padding:6px 10px;border-radius:999px}
+.chap{display:flex;gap:2px;pointer-events:auto;background:color-mix(in oklab,var(--card) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid var(--line);border-radius:999px;padding:4px;box-shadow:0 6px 24px -12px rgba(0,0,0,.6)}
+.chap a{font-family:var(--f-mono);font-size:11.5px;letter-spacing:.04em;text-decoration:none;color:var(--ink-2);padding:6px 10px;border-radius:999px;white-space:nowrap;transition:background .25s,color .25s}
+.chap a.on{background:var(--ink);color:var(--paper)}
+.progress{position:fixed;left:0;top:env(safe-area-inset-top,0px);height:3px;background:var(--bark);width:0;z-index:41}
+@media (max-width:820px){.chap a span{display:none}.brand{display:none}.bar .in{justify-content:center}}
+
+/* ---------- hero ---------- */
+.hero{position:relative;overflow:hidden;padding-block:110px 40px;background:radial-gradient(90% 70% at 75% 30%,#2A2018,var(--paper) 70%)}
+.hero .in{position:relative;z-index:2;display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:24px;align-items:end}
+.hero h1{font-size:clamp(54px,9.6vw,150px);line-height:.86;font-variation-settings:"opsz" 96,"wdth" 78;font-weight:800;letter-spacing:-.04em}
+.hero h1 em{font-style:normal;color:var(--bark)}
+.hero .txt{display:flex;flex-direction:column;gap:24px;padding-bottom:30px;min-width:0}
+.hero .lede{max-width:44ch;font-size:clamp(17px,1.6vw,20px)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips span{font-family:var(--f-mono);font-size:12px;padding:6px 11px;border:1px solid var(--line);border-radius:999px;background:var(--card);color:var(--ink-2)}
+.cue{display:inline-flex;align-items:center;gap:10px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2);letter-spacing:.1em;text-transform:uppercase}
+.cue i{width:22px;height:34px;border:1.5px solid var(--ink-2);border-radius:12px;position:relative;display:block}
+.cue i::after{content:"";position:absolute;left:50%;top:7px;width:3px;height:7px;border-radius:2px;background:var(--bark);transform:translateX(-50%);animation:cue 1.8s ease-in-out infinite}
+@keyframes cue{0%{opacity:0;transform:translate(-50%,0)}30%{opacity:1}100%{opacity:0;transform:translate(-50%,12px)}}
+.hero-art{position:relative;min-width:0}
+.hero-art svg{display:block;width:100%;height:auto;overflow:visible}
+.hills{position:absolute;left:0;right:0;bottom:0;height:46%;z-index:1;pointer-events:none}
+.hills svg{width:100%;height:100%;display:block}
+.crown-sway{transform-box:fill-box;transform-origin:50% 100%;animation:sway 6s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-1.2deg)}50%{transform:rotate(1.4deg)}}
+@media (max-width:820px){.hero .in{grid-template-columns:1fr}.hero-art{max-width:420px;justify-self:center;width:100%;order:-1;margin-bottom:-20px}.hero{padding-top:84px}}
+
+/* ---------- ticker ---------- */
+.ticker{overflow:hidden;white-space:nowrap;padding-block:16px;background:var(--card);color:var(--ink);border-block:1px solid var(--line)}
+.ticker .track{display:inline-flex;gap:48px;animation:tick 40s linear infinite;padding-left:48px;will-change:transform}
+.ticker .it{display:inline-flex;align-items:baseline;gap:10px}
+.ticker .it b{font-family:var(--f-display);font-size:clamp(28px,3.6vw,44px);font-weight:700;font-variation-settings:"wdth" 80}
+.ticker .it span{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;opacity:.8}
+.ticker .sep{color:var(--bark);font-size:22px}
+@keyframes tick{to{transform:translateX(-50%)}}
+
+/* ---------- pinned scenes ---------- */
+.scene{position:relative;background:var(--paper);overflow:hidden}
+.scene .frame{height:100vh;height:100svh;display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);gap:40px;align-items:center;padding-top:calc(64px + env(safe-area-inset-top,0px));padding-bottom:max(28px,env(safe-area-inset-bottom,0px));padding-left:var(--gl);padding-right:var(--gr);max-width:1320px;margin:0 auto}
+.scene .caps{position:relative;align-self:center;min-height:300px}
+.scene .cap{position:absolute;inset:0 0 auto 0;display:flex;flex-direction:column;gap:14px;visibility:hidden}
+.scene .cap.on{visibility:visible}
+.scene .cap .k{font-family:var(--f-mono);font-size:12px;color:var(--bark);letter-spacing:.12em;text-transform:uppercase}
+.scene .cap h2{font-size:clamp(30px,4.2vw,58px);line-height:.98;font-variation-settings:"wdth" 84,"opsz" 96}
+.scene .cap p{font-size:clamp(16px,1.35vw,19px);max-width:40ch;color:var(--ink)}
+.scene .cap .fact{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);border-left:3px solid var(--moss);padding-left:10px;max-width:46ch}
+.scene .stage{position:relative;height:100%;max-height:calc(100svh - 120px);display:flex;align-items:center;justify-content:center;min-width:0}
+.scene .stage svg.ill{width:100%;height:100%;max-height:100%;display:block}
+.steps{position:absolute;left:var(--gl);bottom:max(18px,env(safe-area-inset-bottom,0px));display:flex;gap:6px;z-index:3}
+.steps i{width:22px;height:3px;border-radius:2px;background:var(--line);overflow:hidden;position:relative}
+.steps i b{position:absolute;inset:0;width:0;background:var(--bark)}
+.scene .tag{position:absolute;right:var(--gr);bottom:max(14px,env(safe-area-inset-bottom,0px));font-family:var(--f-mono);font-size:10.5px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase;z-index:3}
+@media (max-width:820px){
+ .scene .frame{grid-template-columns:1fr;grid-template-rows:minmax(0,1fr) auto;gap:10px;align-items:stretch;padding-top:calc(58px + env(safe-area-inset-top,0px));padding-bottom:max(40px,env(safe-area-inset-bottom,0px))}
+ .scene .stage{order:-1;max-height:none;height:100%;min-height:0}
+ .scene .caps{min-height:0;height:clamp(170px,31svh,240px)}
+ .scene .cap{gap:8px}
+ .scene .cap h2{font-size:clamp(25px,7vw,32px)}
+ .scene .cap p{font-size:15px}
+ .scene .cap .fact{font-size:11.5px}
+ .scene .tag{display:none}
+}
+/* tanpa animasi: adegan tidak dipin, semua langkah tampil berurutan */
+.static .scene .frame{height:auto;grid-template-columns:1fr;padding-block:64px}
+.static .scene .stage{max-height:none;height:auto}
+.static .scene .caps{min-height:0;height:auto;display:flex;flex-direction:column;gap:28px}
+.static .scene .cap{position:static;visibility:visible}
+.static .steps{display:none}
+
+/* plates (gambar penelitian) */
+.plate{background:#F5F0E8;border-radius:10px;border:1px solid var(--line);padding:8px;box-shadow:0 22px 44px -26px rgba(0,0,0,.7)}
+.plate img{display:block;width:100%;height:auto;border-radius:4px}
+.rg{position:relative;max-height:100%;aspect-ratio:1035/1150;height:100%;max-width:100%}
+.rg img{display:block;width:100%;height:100%;object-fit:contain;border-radius:8px;background:#0E0A08;filter:sepia(.25) contrast(1.04)}
+.rg svg,.rg canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.rg .ghost{position:absolute;inset:0;border-radius:8px;overflow:hidden;opacity:0;box-shadow:0 14px 30px -18px rgba(0,0,0,.8)}
+.rg .ghost img{filter:grayscale(1) contrast(.9)}
+.rg .count{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--f-display);font-weight:800;font-variation-settings:"wdth" 75,"opsz" 96;font-size:clamp(80px,12vw,170px);color:var(--bark);opacity:0;text-shadow:0 4px 24px rgba(0,0,0,.6);line-height:.8;text-align:center}
+.rg .count small{display:block;font-family:var(--f-mono);font-size:14px;font-weight:600;letter-spacing:.08em;color:var(--ink);text-transform:uppercase;margin-top:10px}
+.rg .scan{position:absolute;top:2%;bottom:2%;width:3px;left:0;background:var(--bark);box-shadow:0 0 16px 3px rgba(194,85,43,.55);opacity:0;border-radius:2px}
+.rg .xyz{position:absolute;right:4%;bottom:4%;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-family:var(--f-mono);font-size:12px;display:flex;flex-direction:column;gap:4px;opacity:0;box-shadow:0 10px 24px -16px rgba(0,0,0,.7)}
+.rg .xyz b{color:var(--bark)}
+.apx circle.c{fill:none;stroke:var(--bark);stroke-width:6}
+.apx circle.p{fill:none;stroke:var(--bark);stroke-width:3;opacity:0;transform-box:fill-box;transform-origin:center}
+.apx text{fill:var(--ink);font-family:var(--f-mono);font-size:32px;font-weight:600;paint-order:stroke;stroke:#0E0A08;stroke-width:7px}
+.pulse .apx circle.p{animation:ping 2.2s ease-out infinite}
+@keyframes ping{0%{opacity:.9;transform:scale(1)}100%{opacity:0;transform:scale(2.4)}}
+.hb rect{fill:none;stroke:var(--bark);stroke-width:4;stroke-dasharray:14 10}
+.seq{position:relative;width:100%;height:100%}
+.seq .sl{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0}
+.seq .sl:first-child{opacity:1}
+.seq .sl .plate{max-height:100%;max-width:100%;display:flex}
+.seq .sl .plate img{max-height:calc(100svh - 150px);width:auto;max-width:100%;object-fit:contain}
+.seq .sl .lab{position:absolute;left:12px;top:12px;font-family:var(--f-mono);font-size:11px;background:var(--forest);color:#fff;padding:4px 9px;border-radius:999px;letter-spacing:.06em}
+@media (max-width:820px){.seq .sl .plate img{max-height:calc(56svh - 40px)}}
+
+/* ---------- statement ---------- */
+.stmt{padding-block:16vh 10vh}
+.stmt p{font-family:var(--f-display);font-weight:700;font-variation-settings:"wdth" 84,"opsz" 96;font-size:clamp(34px,5.6vw,84px);line-height:1.02;letter-spacing:-.025em;max-width:18ch}
+.stmt p .wd{opacity:1;transition:opacity .2s}
+.js-st .stmt p .wd{opacity:.14}
+.stmt p em{font-style:normal;color:var(--bark)}
+.sol{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;margin-top:56px}
+@media (max-width:820px){.sol{grid-template-columns:1fr}}
+.solc{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:14px;transform-style:preserve-3d;transition:box-shadow .3s;will-change:transform}
+.solc:hover{box-shadow:0 30px 50px -30px rgba(0,0,0,.8)}
+.solc .n{font-family:var(--f-display);font-weight:800;font-size:64px;line-height:.8;color:transparent;-webkit-text-stroke:1.5px var(--forest);font-variation-settings:"wdth" 75}
+.solc h3{font-size:30px;font-variation-settings:"wdth" 84;line-height:1}
+.solc .mini{height:150px;border-radius:12px;background:var(--mist);overflow:hidden;position:relative}
+.solc .mini svg{width:100%;height:100%;display:block}
+
+/* ---------- chapters (non-pinned) ---------- */
+.ch{position:relative;padding-block:110px}
+.ch.alt{background:var(--card);border-block:1px solid var(--line)}
+.ch-head{display:flex;flex-direction:column;gap:14px;margin-bottom:48px;max-width:900px}
+.ch-head h2{font-size:clamp(38px,6vw,86px);line-height:.94;font-variation-settings:"wdth" 82,"opsz" 96}
+.ch-head p{max-width:60ch;font-size:18px;color:var(--ink-2)}
+@media (max-width:720px){.ch{padding-block:76px}}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+@media (max-width:900px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.ch.alt .card{background:var(--paper)}
+.card h3{font-size:24px;font-variation-settings:"wdth" 88;line-height:1.1}
+.note{font-size:14.5px;color:var(--ink-2)}
+.wide{grid-column:1/-1}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.tabs button{font-family:var(--f-mono);font-size:12.5px;letter-spacing:.03em;padding:9px 14px;border:1px solid var(--line);border-radius:999px;color:var(--ink-2);min-height:40px;background:var(--card);transition:background .25s,color .25s,border-color .25s,transform .25s}
+.tabs button:hover{border-color:var(--ink-2);color:var(--ink)}
+.tabs button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+/* waffle */
+.waf{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px}
+@media (max-width:760px){.waf{grid-template-columns:1fr}}
+.wf{display:flex;flex-direction:column;gap:14px}
+.wf .big{font-family:var(--f-display);font-weight:800;font-variation-settings:"wdth" 76,"opsz" 96;font-size:clamp(64px,8vw,112px);line-height:.85;color:var(--forest)}
+.wf .big small{font-size:.32em;color:var(--ink-2);font-weight:600;margin-left:6px}
+.grid100{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:5px;max-width:330px}
+.grid100 i{aspect-ratio:1;border-radius:50%;background:var(--mist);display:block;position:relative;overflow:hidden}
+.grid100 i.on{background:var(--forest)}
+.grid100 i.part::after{content:"";position:absolute;inset:0;background:var(--forest);clip-path:inset(0 var(--cut) 0 0)}
+.grid100.rec i.on,.grid100.rec i.part::after{background:var(--bark)}
+/* bars */
+.bars{display:flex;flex-direction:column;gap:14px}
+.brow{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr) 62px;gap:14px;align-items:center}
+.brow .k{font-size:15px;line-height:1.25}
+.brow .k small{display:block;color:var(--ink-2);font-size:12.5px}
+.brow.hl .k{font-weight:700}
+.track{position:relative;height:12px;background:var(--mist);border-radius:6px;overflow:hidden}
+.fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--moss);border-radius:6px;transition:width 1.2s cubic-bezier(.16,1,.3,1)}
+.brow.hl .fill{background:var(--bark)}
+.brow .v{font-family:var(--f-mono);font-size:15px;text-align:right}
+.axis{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr) 62px;gap:14px}
+.axis .ticks{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--ink-2)}
+@media (max-width:560px){.brow,.axis{grid-template-columns:1fr 54px}.brow .k{grid-column:1/-1}.axis>span:first-child{display:none}.axis .ticks{grid-column:1}}
+details.more{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:6px 22px}
+details.more>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding-block:14px;font-family:var(--f-display);font-size:22px;font-weight:700;font-variation-settings:"wdth" 88}
+details.more>summary::-webkit-details-marker{display:none}
+details.more>summary::after{content:"+";font-family:var(--f-mono);font-size:22px;color:var(--bark)}
+details.more[open]>summary::after{content:"–"}
+details.more .grid2{padding-bottom:22px}
+.mx{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr));gap:6px}
+.mx .h{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase;padding:6px 4px}
+.mx .r{font-size:14.5px;padding:12px 4px;align-self:center}
+.mx .t{border-radius:8px;padding:16px 8px;text-align:center;font-family:var(--f-mono);font-size:17px;position:relative}
+.mx .t.pick{outline:2px solid var(--bark);outline-offset:-2px;font-weight:600}
+.mx .t.pick::after{content:"terpilih";position:absolute;top:3px;right:6px;font-size:9.5px;color:var(--bark)}
+.duo{display:flex;flex-direction:column;gap:10px}
+.drow{display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center}
+.drow .k{font-size:14px}
+.drow .k small{display:block;color:var(--ink-2);font-family:var(--f-mono);font-size:11px}
+.pair{display:flex;flex-direction:column;gap:4px}
+.pair .track{height:8px}
+.pair .fill.p{background:var(--forest)}
+.pair .fill.r{background:var(--bark)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+
+/* tree explorer */
+.trees{display:flex;flex-wrap:wrap;gap:6px}
+.trees button{font-family:var(--f-display);font-size:19px;font-weight:700;font-variation-settings:"wdth" 85;padding:10px 16px;border:1px solid var(--line);border-radius:12px;min-height:48px;line-height:1;display:flex;flex-direction:column;align-items:flex-start;gap:4px;background:var(--card);transition:border-color .2s,background .2s,transform .25s}
+.trees button small{font-family:var(--f-mono);font-size:10.5px;font-weight:400;color:var(--ink-2);letter-spacing:.06em}
+.trees button[aria-pressed="true"]{background:var(--bark);border-color:var(--bark);color:var(--paper)}
+.trees button[aria-pressed="true"] small{color:var(--paper)}
+.tstats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.tstats div{background:var(--card);padding:16px}
+.tstats b{display:block;font-family:var(--f-display);font-size:clamp(28px,3.4vw,40px);font-weight:800;font-variation-settings:"wdth" 80;line-height:1;color:var(--forest)}
+.tstats span{display:block;font-size:13px;color:var(--ink-2);margin-top:6px;line-height:1.3}
+@media (max-width:640px){.tstats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.vs .brow{grid-template-columns:minmax(0,200px) minmax(0,1fr) 70px}
+.vs .twin{display:flex;flex-direction:column;gap:4px}
+.vs .twin .track{height:9px}
+.vs .twin .fill.s{background:var(--moss)}
+.vs .twin .fill.u{background:var(--bark)}
+.vs .vv{font-family:var(--f-mono);font-size:13px;text-align:right;line-height:1.25}
+@media (max-width:560px){.vs .brow{grid-template-columns:1fr 64px}.vs .brow .k{grid-column:1/-1}}
+.imgs{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:760px){.imgs{grid-template-columns:1fr}}
+figure{margin:0}
+figure figcaption{font-size:13.5px;color:var(--ink-2);margin-top:8px}
+
+/* galian */
+.gal{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:40px;align-items:center}
+@media (max-width:900px){.gal{grid-template-columns:1fr}}
+.ring svg{display:block;width:100%;max-width:560px;margin:0 auto;height:auto;overflow:visible}
+.ring text{font-family:var(--f-mono)}
+.ctrls{display:flex;flex-direction:column;gap:16px}
+.ctrl{display:flex;flex-direction:column;gap:8px}
+.score{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.score div{background:var(--card);padding:14px}
+.score b{display:block;font-family:var(--f-display);font-size:42px;font-weight:800;font-variation-settings:"wdth" 78;line-height:1;color:var(--forest)}
+.score span{font-size:12.5px;color:var(--ink-2)}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}
+th{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:400}
+td.n,th.n{text-align:right;font-family:var(--f-mono)}
+tr.cur td{color:var(--bark);font-weight:600}
+.callout{border-left:4px solid var(--bark);background:var(--card);padding:16px 20px;border-radius:0 12px 12px 0;font-size:16px;max-width:70ch}
+
+/* temuan */
+.finds{display:flex;flex-direction:column}
+.find{display:grid;grid-template-columns:minmax(0,.55fr) minmax(0,1fr);gap:32px;padding-block:40px;border-top:1px solid var(--line);align-items:baseline}
+.find b{font-family:var(--f-display);font-size:clamp(60px,9.5vw,140px);line-height:.85;font-weight:800;font-variation-settings:"wdth" 75,"opsz" 96;color:var(--forest)}
+.find b small{display:block;font-family:var(--f-mono);font-size:12px;font-weight:400;letter-spacing:.08em;color:var(--ink-2);text-transform:uppercase;margin-top:12px}
+.find h3{font-size:clamp(24px,2.8vw,36px);font-variation-settings:"wdth" 88;line-height:1.08;margin-bottom:12px}
+.find p{color:var(--ink-2);max-width:56ch}
+@media (max-width:720px){.find{grid-template-columns:1fr;gap:12px;padding-block:28px}}
+.why{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:48px}
+@media (max-width:820px){.why{grid-template-columns:1fr}}
+.why div{background:var(--card);border:1px solid var(--line);color:var(--ink);border-radius:16px;padding:24px;display:flex;flex-direction:column;gap:10px}
+.why div h4{font-size:22px;font-variation-settings:"wdth" 86;line-height:1.1}
+.why div p{color:var(--ink-2);font-size:15.5px}
+
+footer{padding-block:80px 64px;background:var(--mist)}
+footer .in{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px}
+@media (max-width:800px){footer .in{grid-template-columns:1fr}}
+footer h2{font-size:clamp(32px,4vw,52px);font-variation-settings:"wdth" 82;line-height:.95;margin-bottom:16px}
+footer details{border-top:1px solid var(--line);padding-block:14px}
+footer details:last-of-type{border-bottom:1px solid var(--line)}
+footer summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:12px;font-weight:600}
+footer summary::-webkit-details-marker{display:none}
+footer summary::after{content:"+";font-family:var(--f-mono);color:var(--bark)}
+footer details[open] summary::after{content:"–"}
+footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
+.refs{display:flex;flex-direction:column;gap:8px;font-size:14px;color:var(--ink-2)}
+.credit{font-size:15px;display:flex;flex-direction:column;gap:6px}
+
+/* adegan 3D (dipin) */
+.pin{position:relative;height:100vh;height:100svh;overflow:hidden;background:radial-gradient(120% 90% at 70% 40%,#2A1E16 0%,var(--paper) 70%)}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block}
+.pin::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(90deg,color-mix(in oklab,var(--paper) 78%,transparent) 0%,transparent 42%)}
+@media (max-width:820px){.pin::after{display:none}}
+.pin .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:90px 20px 220px}
+.pin .fallback img{max-width:min(720px,100%);max-height:100%;border-radius:8px;background:#F5F0E8}
+.bscan{position:absolute;left:0;top:0;transform-origin:0 0;z-index:2;will-change:transform}
+.bscan .bs-in{position:relative;width:100%;height:100%;border-radius:8px;overflow:hidden;border:1px solid var(--line);box-shadow:0 26px 60px -30px rgba(0,0,0,.9);background:#0E0A08}
+.bscan img{display:block;width:100%;height:100%;object-fit:cover;filter:sepia(.25) contrast(1.04)}
+.bscan svg{position:absolute;inset:0;width:100%;height:100%}
+.bscan .bs-lab{position:absolute;left:10px;top:10px;font-family:var(--f-mono);font-size:12px;background:var(--bark);color:var(--paper);padding:4px 10px;border-radius:999px;letter-spacing:.06em}
+.pin-title{position:absolute;top:calc(62px + env(safe-area-inset-top,0px));left:var(--gl);z-index:3;display:flex;flex-direction:column;gap:8px;max-width:46%}
+.pin-title h2{font-size:clamp(30px,4.6vw,62px);font-variation-settings:"wdth" 82,"opsz" 96;line-height:.95}
+.story{position:absolute;left:var(--gl);bottom:max(36px,env(safe-area-inset-bottom,0px));z-index:3;width:min(450px,calc(100% - 40px));display:flex;flex-direction:column;gap:12px}
+.story .kicker{color:var(--bark)}
+.story h3{font-size:clamp(28px,3.4vw,46px);line-height:.98;font-variation-settings:"wdth" 82}
+.story p{font-size:16.5px;max-width:40ch}
+.story .fact{font-family:var(--f-mono);font-size:12.5px;color:var(--ink-2);border-top:1px solid var(--line);padding-top:10px}
+.prog{display:flex;gap:6px}
+.prog i{flex:1;height:3px;background:var(--line);border-radius:2px;overflow:hidden;position:relative}
+.prog i b{position:absolute;inset:0;width:0;background:var(--bark)}
+.pin .ill{position:absolute;right:var(--gr);bottom:max(16px,env(safe-area-inset-bottom,0px));z-index:3;font-family:var(--f-mono);font-size:10.5px;color:var(--ink-2);letter-spacing:.04em;max-width:320px;text-align:right}
+.compass{position:absolute;right:var(--gr);bottom:max(84px,env(safe-area-inset-bottom,0px));z-index:3;font-family:var(--f-mono);font-size:11px;color:var(--ink-2)}
+@media (max-width:820px){
+ .pin-title{max-width:none;right:var(--gr)}.pin-title h2{display:none}
+ .story{bottom:max(14px,env(safe-area-inset-bottom,0px));background:color-mix(in oklab,var(--paper) 88%,transparent);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);padding:14px 16px;border-radius:12px;border:1px solid var(--line);width:calc(100% - 32px);left:16px;gap:8px;max-height:44svh;overflow:hidden}
+ .story h3{font-size:24px}.story p{font-size:14.5px}.story .fact{font-size:11.5px}
+ .pin .ill,.compass{display:none}
+}
+.abc{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);gap:24px;align-items:center}
+@media (max-width:760px){.abc{grid-template-columns:1fr}}
+.abc h4{font-family:var(--f-display);font-size:30px;margin:0;font-variation-settings:"wdth" 82;line-height:1}
+.rv{transition:transform 1s cubic-bezier(.16,1,.3,1),opacity 1s}
+.rv.pre{transform:translateY(36px);opacity:.25}
+@media (prefers-reduced-motion:reduce){.ticker .track,.crown-sway,.cue i::after{animation:none}.rv,.fill{transition:none}.pulse .apx circle.p{animation:none}}
+</style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+<header class="bar"><div class="in">
+<a class="brand" href="#top">S. K. Wildah · IPB</a>
+<nav class="chap" aria-label="Bab"><a href="#mengapa">01<span> Mengapa</span></a><a href="#radar">02<span> Radar</span></a><a href="#solusi">03<span> Solusi</span></a><a href="#hasil">04<span> Hasil</span></a><a href="#akar3d">05<span> Akar 3D</span></a><a href="#galian">06<span> Galian</span></a><a href="#temuan">07<span> Temuan</span></a></nav>
+</div></header>
+
+<!-- ================= HERO ================= -->
+<section class="hero" id="top">
+<div class="hills" aria-hidden="true"><svg viewBox="0 0 1440 400" preserveAspectRatio="none"><path id="hill1" d="M0 250 C 240 190 420 230 640 200 S 1100 150 1440 210 L1440 400 L0 400 Z" fill="#1C2219"/><path id="hill2" d="M0 300 C 300 260 520 300 760 280 S 1200 250 1440 285 L1440 400 L0 400 Z" fill="#20281D"/></svg></div>
+<div class="in">
+<div class="txt">
+<div class="kicker"><b>Seminar Hasil</b> · Program Doktor Ilmu Komputer · IPB University</div>
+<h1 id="heroH">Membaca akar tanpa <em>menggali.</em></h1>
+<p class="lede" id="heroP">Akar menahan pohon tetap berdiri, tetapi tersembunyi di bawah tanah. Penelitian ini memakai radar tanah dan <i>computer vision</i> untuk melihat akar pohon <i>Agathis</i> dalam tiga dimensi, tanpa merusaknya.</p>
+<div class="chips" id="heroC"><span>8 pohon Agathis</span><span>Hutan Pendidikan Gunung Walat</span><span>850 radargram</span><span>2.376 akar berlabel</span></div>
+<div class="cue"><i></i>Gulir pelan untuk mulai</div>
+</div>
+<div class="hero-art" aria-hidden="true">
+<svg viewBox="0 0 520 560" id="heroTree">
+<ellipse cx="270" cy="520" rx="210" ry="18" fill="#2A3326"/>
+<path d="M258 520 L250 250 L274 250 L284 520 Z" fill="#9A6A4A"/>
+<path d="M262 330 L210 280 M270 300 L330 250" stroke="#9A6A4A" stroke-width="10" stroke-linecap="round"/>
+<g class="crown-sway">
+<circle cx="200" cy="230" r="86" fill="#4C8F4F"/><circle cx="330" cy="220" r="96" fill="#3F7F45"/><circle cx="265" cy="150" r="104" fill="#5A9C58"/>
+<circle cx="170" cy="170" r="62" fill="#6FAE66"/><circle cx="360" cy="140" r="64" fill="#4C8F4F"/><circle cx="265" cy="70" r="70" fill="#7DB872"/>
+<circle cx="225" cy="110" r="28" fill="#9CCB8C" opacity=".7"/><circle cx="315" cy="190" r="22" fill="#9CCB8C" opacity=".55"/>
+</g>
+<g id="leaves"></g>
+</svg>
+</div>
+</div>
+</section>
+
+<div class="ticker" aria-label="Angka utama"><div class="track" id="ticker"></div></div>
+
+<!-- ================= SCENE 1: MENGAPA ================= -->
+<section class="scene" id="mengapa" data-n="6">
+<div class="frame">
+<div class="caps">
+<div class="cap"><span class="k">01 · Mengapa akar</span><h2>Pohon berdiri karena akarnya.</h2><p>Batang dan tajuk yang kita lihat hanya separuh cerita. Separuh lainnya ada di bawah kaki kita.</p></div>
+<div class="cap"><span class="k">01 · Mengapa akar</span><h2>Saat angin menerpa, akarlah yang menahan.</h2><p>Tajuk yang besar menangkap angin seperti layar. Akar bekerja seperti jangkar yang menahan pohon agar tidak roboh.</p></div>
+<div class="cap"><span class="k">01 · Mengapa akar</span><h2>Kekuatannya ada pada arsitektur akar.</h2><p>Seberapa jauh akar menyebar, seberapa dalam, dan ke arah mana ia tumbuh menentukan seberapa kokoh pohon berdiri.</p></div>
+<div class="cap"><span class="k">01 · Mengapa akar</span><h2>Sebaran, kedalaman, arah.</h2><p>Tiga hal ini yang ingin kita ketahui untuk menilai risiko pohon tumbang di hutan kota dan kawasan konservasi.</p></div>
+<div class="cap"><span class="k">01 · Masalahnya</span><h2>Tapi semuanya tersembunyi.</h2><p>Kita tidak bisa melihat akar tanpa membuka tanah.</p></div>
+<div class="cap"><span class="k">01 · Masalahnya</span><h2>Menggali itu lambat dan merusak.</h2><p>Akar terpotong, pohon terganggu, dan hanya sebagian kecil yang terlihat.</p><p class="fact">Contoh nyata: galian pada 5 pohon Agathis HPGW (Taufiqurahman, 2025) hanya membuka cincin 0,8 m di sekitar batang.</p></div>
+</div>
+<div class="stage">
+<svg class="ill" id="svgTree" viewBox="0 0 1000 700" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Ilustrasi pohon dan akar di bawah tanah">
+<defs><clipPath id="pitClip"><path d="M360 330 L640 330 L606 410 Q500 432 394 410 Z"/></clipPath></defs>
+<path d="M0 300 C 160 270 300 290 420 282 S 760 262 1000 284 L1000 330 L0 330 Z" fill="#1F271C"/>
+<g id="bgtrees" fill="#2C3B29"><path d="M110 330 L140 220 L170 330 Z"/><path d="M820 330 L855 200 L890 330 Z"/><path d="M880 330 L905 250 L930 330 Z"/><path d="M60 330 L80 260 L100 330 Z"/></g>
+<rect x="0" y="330" width="1000" height="370" fill="#3A2A1F"/>
+<path d="M0 450 C 200 438 380 462 560 446 S 860 432 1000 452 L1000 700 L0 700 Z" fill="#33251B"/>
+<path d="M0 580 C 220 568 420 592 620 576 S 880 566 1000 582 L1000 700 L0 700 Z" fill="#2B1F17"/>
+<g id="roots" fill="none" stroke="#C98B5E" stroke-linecap="round">
+<path pathLength="1" stroke-width="12" d="M500 336 C 440 344 360 352 250 372 S 100 410 30 432"/>
+<path pathLength="1" stroke-width="12" d="M500 336 C 560 346 660 354 760 380 S 905 420 975 446"/>
+<path pathLength="1" stroke-width="10" d="M500 340 C 450 362 380 392 300 460 S 215 560 196 616"/>
+<path pathLength="1" stroke-width="10" d="M500 340 C 560 366 640 400 700 470 S 765 560 785 616"/>
+<path pathLength="1" stroke-width="9" d="M500 342 C 478 384 448 440 420 540"/>
+<path pathLength="1" stroke-width="9" d="M500 342 C 526 392 560 450 586 556"/>
+<path pathLength="1" stroke-width="5" d="M330 365 C 300 400 290 430 300 480"/>
+<path pathLength="1" stroke-width="5" d="M180 392 C 160 360 120 352 80 356"/>
+<path pathLength="1" stroke-width="5" d="M680 362 C 700 400 720 420 760 430"/>
+<path pathLength="1" stroke-width="5" d="M840 400 C 860 370 900 360 940 362"/>
+<path pathLength="1" stroke-width="4" d="M262 520 C 230 530 200 520 170 540"/>
+<path pathLength="1" stroke-width="4" d="M740 520 C 770 530 800 520 830 540"/>
+<path pathLength="1" stroke-width="4" d="M440 470 C 400 490 380 520 360 560"/>
+<path pathLength="1" stroke-width="4" d="M565 480 C 600 500 620 520 640 566"/>
+</g>
+<rect id="cover" x="0" y="330" width="1000" height="370" fill="#3A2A1F"/>
+<g id="cover2"><path d="M0 450 C 200 438 380 462 560 446 S 860 432 1000 452 L1000 700 L0 700 Z" fill="#33251B"/><path d="M0 580 C 220 568 420 592 620 576 S 880 566 1000 582 L1000 700 L0 700 Z" fill="#2B1F17"/></g>
+<g id="pit" opacity="0"><path d="M360 330 L640 330 L606 410 Q500 432 394 410 Z" fill="#5A4232"/><g clip-path="url(#pitClip)"><use href="#roots"/></g><path d="M360 330 L640 330 L606 410 Q500 432 394 410 Z" fill="none" stroke="#BFAE98" stroke-width="2.5" stroke-dasharray="7 6"/>
+<g stroke="#EF8656" stroke-width="4" stroke-linecap="round"><path d="M392 360 l14 14 m0 -14 l-14 14"/><path d="M596 362 l14 14 m0 -14 l-14 14"/><path d="M418 398 l12 12 m0 -12 l-12 12"/><path d="M574 400 l12 12 m0 -12 l-12 12"/></g>
+<text x="500" y="460" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="18" fill="#F2E9DC">galian · cincin 0,8 m</text></g>
+<g id="shovel" opacity="0"><path d="M690 120 L640 300" stroke="#6B5640" stroke-width="10" stroke-linecap="round"/><path d="M626 290 L662 302 L650 350 Q636 362 620 352 L616 316 Z" fill="#8E9A9F"/><path d="M682 112 l26 8" stroke="#6B5640" stroke-width="12" stroke-linecap="round"/></g>
+<path d="M478 332 L486 120 L514 120 L524 332 Z" fill="#9A6A4A"/>
+<g id="crown"><circle cx="420" cy="160" r="80" fill="#4C8F4F"/><circle cx="585" cy="150" r="90" fill="#3F7F45"/><circle cx="500" cy="92" r="100" fill="#5A9C58"/><circle cx="398" cy="96" r="60" fill="#6FAE66"/><circle cx="610" cy="78" r="62" fill="#4C8F4F"/><circle cx="500" cy="20" r="62" fill="#7DB872"/></g>
+<g id="wind" fill="none" stroke="#9CC3BD" stroke-width="4" stroke-linecap="round"><path pathLength="1" d="M40 90 C 120 70 200 110 290 90"/><path pathLength="1" d="M20 150 C 110 130 190 170 300 150"/><path pathLength="1" d="M60 210 C 140 190 220 230 300 214"/></g>
+<g id="annot" opacity="0" font-family="JetBrains Mono, monospace" font-size="20" fill="#F2E9DC">
+<path d="M40 665 L960 665" stroke="#EF8656" stroke-width="3" marker-start="url(#ah)" marker-end="url(#ah)"/>
+<text x="500" y="690" text-anchor="middle">SEBARAN</text>
+<path d="M940 344 L940 620" stroke="#9CC3BD" stroke-width="3"/><path d="M930 344 h20 M930 620 h20" stroke="#9CC3BD" stroke-width="3"/>
+<text x="925" y="490" text-anchor="end">KEDALAMAN</text>
+<path d="M610 600 A 140 140 0 0 0 690 470" fill="none" stroke="#8CC59A" stroke-width="3" stroke-dasharray="6 6"/>
+<text x="640" y="635">ARAH</text>
+</g>
+<defs><marker id="ah" viewBox="0 0 10 10" refX="5" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 Z" fill="#EF8656"/></marker></defs>
+<text id="qmark" x="500" y="560" text-anchor="middle" font-family="Bricolage Grotesque, sans-serif" font-weight="800" font-size="190" fill="#F2E9DC" opacity="0">?</text>
+</svg>
+</div>
+</div>
+<div class="steps" aria-hidden="true"></div>
+<div class="tag">Ilustrasi</div>
+</section>
+
+<!-- ================= SCENE 2: RADAR ================= -->
+<section class="scene" id="radar" data-n="3">
+<div class="frame">
+<div class="caps">
+<div class="cap"><span class="k">02 · Solusi awal</span><h2>Radar tanah: “USG” untuk akar.</h2><p>Ground Penetrating Radar (GPR) mengirim gelombang ke dalam tanah dan mendengarkan pantulannya. Tidak ada yang digali.</p><p class="fact">Alat: GPR MIRA 3D 500 MHz · 15–16 September 2026 · HPGW.</p></div>
+<div class="cap"><span class="k">02 · Cara kerja</span><h2>Akar memantulkan gelombang.</h2><p>Alat didorong melintasi tanah. Saat lewat di atas akar, pantulannya tergambar sebagai lengkung berbentuk hiperbola, seperti huruf ∩.</p><p class="fact">Satu swath = 10 lintasan sejajar berjarak ±8 cm.</p></div>
+<div class="cap"><span class="k">02 · Hasilnya</span><h2>Lahirlah radargram.</h2><p>Setiap lintasan menghasilkan satu gambar irisan tanah. Puncak setiap hiperbola menandai posisi dan kedalaman akar.</p></div>
+</div>
+<div class="stage">
+<svg class="ill" id="svgGpr" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Ilustrasi alat GPR memindai tanah dan pantulan hiperbola dari akar">
+<rect x="0" y="0" width="1000" height="232" fill="#1B1410"/>
+<path d="M0 200 C 200 180 400 200 600 190 S 880 175 1000 192 L1000 232 L0 232 Z" fill="#1F271C"/>
+<rect x="0" y="232" width="1000" height="368" fill="#3A2A1F" id="soilB"/>
+<path d="M0 330 C 220 320 420 340 640 326 S 900 318 1000 330" stroke="#4A3727" stroke-width="3" fill="none" id="layB1"/>
+<path d="M0 470 C 220 460 420 482 640 466 S 900 458 1000 470" stroke="#4A3727" stroke-width="3" fill="none" id="layB2"/>
+<image id="rgTex" x="0" y="232" width="1000" height="368" preserveAspectRatio="none" opacity="0"/>
+<g id="stones" fill="#6E6152"><path d="M120 290 l18 -8 l14 10 l-6 14 l-20 2 Z"/><path d="M560 520 l22 -6 l10 14 l-12 12 l-18 -4 Z"/><path d="M900 300 l14 -6 l12 8 l-6 12 l-16 0 Z"/></g>
+<g id="rootsX" fill="#C98B5E"></g>
+<g id="hyps" fill="none" stroke="#EF8656" stroke-width="4" stroke-linecap="round"></g>
+<g id="cart" transform="translate(90,0)">
+<g id="waves" fill="none" stroke="#9CC3BD" stroke-width="3"><path class="wv" d="M-34 236 A 34 22 0 0 0 34 236"/><path class="wv" d="M-60 236 A 60 40 0 0 0 60 236"/><path class="wv" d="M-88 236 A 88 60 0 0 0 88 236"/></g>
+<path d="M28 196 L78 140" stroke="#BFAE98" stroke-width="6" stroke-linecap="round"/><path d="M70 136 l22 -4" stroke="#BFAE98" stroke-width="8" stroke-linecap="round"/>
+<rect x="-46" y="190" width="92" height="30" rx="8" fill="#3F7F45"/><rect x="-34" y="180" width="54" height="14" rx="4" fill="#F1C76B"/>
+<circle cx="-30" cy="226" r="11" fill="#0C0907" stroke="#BFAE98" stroke-width="2"/><circle cx="30" cy="226" r="11" fill="#0C0907" stroke="#BFAE98" stroke-width="2"/>
+</g>
+</svg>
+</div>
+</div>
+<div class="steps" aria-hidden="true"></div>
+<div class="tag">Ilustrasi</div>
+</section>
+
+<!-- ================= SCENE 3: MASALAH RADARGRAM ================= -->
+<section class="scene" id="masalah" data-n="4">
+<div class="frame">
+<div class="caps">
+<div class="cap"><span class="k">02 · Kenyataannya</span><h2>Radargram asli tidak serapi itu.</h2><p>Inilah salah satu radargram dari pohon AG03. Bisakah Anda menemukan akarnya?</p></div>
+<div class="cap"><span class="k">02 · Kenyataannya</span><h2>Samar, terputus, penuh noise.</h2><p>Pantulan akar bercampur dengan batu, air, dan lapisan tanah. Hiperbola yang ada tidak utuh dan mudah tertukar.</p><p class="fact">Kotak putus-putus: lima hiperbola akar yang dilabel ahli pada radargram ini.</p></div>
+<div class="cap"><span class="k">02 · Kenyataannya</span><h2>Dan jumlahnya ratusan.</h2><p>Setiap pohon dipindai puluhan lintasan. Untuk delapan pohon, terkumpul 850 radargram berisi 2.376 akar berlabel.</p></div>
+<div class="cap"><span class="k">02 · Kenyataannya</span><h2>Membaca manual: lambat dan tetap 2D.</h2><p>Ahli perlu waktu lama untuk menandai satu per satu, dan hasilnya hanya potongan-potongan dua dimensi, belum gambaran akar utuh.</p></div>
+</div>
+<div class="stage">
+<div class="rg" id="rgProblem">
+<div class="ghost" style="z-index:0"><img src="img/radargram_bersih.jpg" alt=""></div><div class="ghost" style="z-index:0"><img src="img/radargram_bersih.jpg" alt=""></div><div class="ghost" style="z-index:0"><img src="img/radargram_bersih.jpg" alt=""></div><div class="ghost" style="z-index:0"><img src="img/radargram_bersih.jpg" alt=""></div><div class="ghost" style="z-index:0"><img src="img/radargram_bersih.jpg" alt=""></div><div class="ghost" style="z-index:0"><img src="img/radargram_bersih.jpg" alt=""></div>
+<img class="main" src="img/radargram_bersih.jpg" alt="Radargram asli lintasan pohon AG03" width="1035" height="1150" style="position:relative;z-index:1">
+<canvas id="noise" style="z-index:2;opacity:0;mix-blend-mode:multiply"></canvas>
+<svg viewBox="0 0 1035 1150" style="z-index:3" aria-hidden="true"><g class="hb" id="hbBoxes" opacity="0"></g></svg>
+<div class="count" id="count850" style="z-index:4">850<small>radargram · 8 pohon</small></div>
+</div>
+</div>
+</div>
+<div class="steps" aria-hidden="true"></div>
+<div class="tag">Data: radargram AG03 (label v2)</div>
+</section>
+
+<!-- ================= STATEMENT + SOLUSI ================= -->
+<section class="ch" id="solusi" style="padding-top:40px"><div class="in">
+<div class="stmt" id="stmt"><p>Maka kami menghadirkan <em>dua langkah</em>: <em>computer vision</em> yang membaca radargram, lalu menyusun titik-titik akar menjadi <em>arsitektur 3D</em>.</p></div>
+<div class="sol">
+<div class="solc rv" data-tilt>
+<span class="n">1</span><h3>Computer vision membaca radargram</h3>
+<p class="dim">Model <b>Apex-RetinaNet</b> menunjuk puncak setiap hiperbola. Hasilnya bukan kotak, melainkan titik akar dengan posisi dan kedalaman dalam meter.</p>
+<div class="mini"><svg viewBox="0 0 400 150" aria-hidden="true"><rect width="400" height="150" fill="#2C2119"/><g fill="none" stroke="#6E6152" stroke-width="3"><path d="M20 120 Q 80 30 140 120"/><path d="M150 130 Q 210 50 270 130"/><path d="M260 115 Q 320 40 380 115"/></g><g class="pop" fill="#EF8656"><circle cx="80" cy="75" r="9"/><circle cx="210" cy="90" r="9"/><circle cx="320" cy="78" r="9"/></g></svg></div>
+</div>
+<div class="solc rv" data-tilt>
+<span class="n">2</span><h3>Menyambung titik jadi akar</h3>
+<p class="dim">Model graf <b>BF-GCN</b> memutuskan titik mana yang satu akar dan ke mana induknya, lalu <b>Bio-cGAN</b> mengisi bagian yang tidak terlihat radar.</p>
+<div class="mini"><svg viewBox="0 0 400 150" aria-hidden="true"><rect width="400" height="150" fill="#2C2119"/><rect x="192" y="0" width="16" height="40" fill="#9A6A4A"/><g class="lnk" fill="none" stroke="#C98B5E" stroke-width="5" stroke-linecap="round"><path pathLength="1" d="M200 40 C 160 52 110 70 40 110"/><path pathLength="1" d="M200 40 C 240 54 300 66 360 104"/><path pathLength="1" d="M200 42 C 196 80 210 110 200 140"/></g><g fill="#F2E9DC"><circle cx="120" cy="66" r="5"/><circle cx="70" cy="94" r="5"/><circle cx="280" cy="62" r="5"/><circle cx="335" cy="90" r="5"/><circle cx="203" cy="96" r="5"/><circle cx="200" cy="128" r="5"/></g></svg></div>
+</div>
+</div>
+</div></section>
+
+<!-- ================= SCENE 4: COMPUTER VISION MEMBACA ================= -->
+<section class="scene" id="ai" data-n="3">
+<div class="frame">
+<div class="caps">
+<div class="cap"><span class="k">03 · Langkah 1</span><h2>Computer vision memindai radargram…</h2><p>Model melihat seluruh gambar sekaligus dan mencari pola lengkung pantulan akar.</p></div>
+<div class="cap"><span class="k">03 · Langkah 1</span><h2>…dan menunjuk puncak tiap hiperbola.</h2><p>Puncak (apex) adalah titik tempat akar memotong lintasan radar. Di sinilah akar benar-benar berada.</p><p class="fact">Data uji: precision 0,803 · recall 0,825 · AP titik @0,30 m 0,903.</p></div>
+<div class="cap"><span class="k">03 · Langkah 1</span><h2>Setiap titik menjadi koordinat.</h2><p>Posisi pada lintasan dan kedalaman diubah ke meter, dengan pusat batang sebagai titik nol. Dari 850 radargram terkumpul ribuan titik akar.</p></div>
+</div>
+<div class="stage">
+<div class="rg" id="rgAI">
+<img src="img/radargram_bersih.jpg" alt="Radargram AG03 dengan titik puncak hiperbola" width="1035" height="1150">
+<svg viewBox="0 0 1035 1150" aria-hidden="true"><g class="apx" id="apxAI"></g></svg>
+<div class="scan" id="scanAI"></div>
+<div class="xyz" id="xyzAI"><span><b>X</b> barat → timur (m)</span><span><b>Y</b> selatan → utara (m)</span><span><b>Z</b> kedalaman (m)</span><span class="dim">pusat batang = (0, 0)</span></div>
+</div>
+</div>
+</div>
+<div class="steps" aria-hidden="true"></div>
+<div class="tag">Data: radargram AG03 · titik puncak berlabel</div>
+</section>
+
+<!-- ================= HASIL DETEKSI ================= -->
+<section class="ch alt" id="hasil"><div class="in">
+<div class="ch-head rv"><span class="kicker"><b>03 · Hasil langkah 1</b></span><h2>Seberapa jitu computer vision menemukan akar?</h2><p>Diuji pada 80 radargram yang tidak pernah dilihat model. Titik dihitung benar bila jaraknya ke akar sebenarnya tidak lebih dari 20 cm.</p></div>
+<div class="waf rv">
+<div class="wf"><div class="big" id="wfP">80,3<small>/ 100</small></div><div class="grid100" id="gridP" aria-hidden="true"></div><p><b>Dari setiap 100 titik yang ditunjuk model, sekitar 80 memang akar.</b> <span class="dim">(precision 0,803)</span></p></div>
+<div class="wf"><div class="big" id="wfR" style="color:var(--bark)">82,5<small>/ 100</small></div><div class="grid100 rec" id="gridR" aria-hidden="true"></div><p><b>Dari setiap 100 akar yang ada, sekitar 82 berhasil ditemukan.</b> <span class="dim">(recall 0,825)</span></p></div>
+</div>
+<div class="card rv" style="margin-top:40px">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:center"><h3>Bagaimana kami sampai ke sana</h3><div class="tabs" id="mTabs" role="group" aria-label="Metrik"></div></div>
+<div class="axis"><span></span><div class="ticks"><span>0,60</span><span>0,70</span><span>0,80</span><span>0,90</span><span>1,00</span></div><span></span></div>
+<div class="bars" id="stageBars"></div>
+<p class="note" id="stageNote"></p>
+</div>
+<details class="more rv" style="margin-top:24px"><summary>Detail teknis untuk yang ingin tahu</summary>
+<div class="grid2">
+<div class="card"><h3>Memilih detektor dasar</h3><div class="tabs" id="dTabs" role="group" aria-label="Metrik detektor"></div>
+<div class="axis"><span></span><div class="ticks"><span>0,50</span><span>0,60</span><span>0,70</span><span>0,80</span><span>0,90</span></div><span></span></div>
+<div class="bars" id="detBars"></div><p class="note">Rata-rata 5 seed. RetinaNet unggul AP50 di 5 dari 5 seed, sehingga dipakai sebagai dasar.</p></div>
+<div class="card"><h3>Blended feature di tiga posisi</h3><div class="mx" id="mx"></div><p class="note">AP titik @0,30 m. Tanpa blended 0,869 (5 seed) / 0,871 (10 seed). Dipilih dari validasi: late fusion fitur fisika + kesinambungan antar-lintasan (F1 +0,007; 8/10 seed; p 0,031).</p></div>
+<div class="card"><h3>Kurva precision–recall</h3><div class="plate"><img src="img/pr.jpg" alt="Kurva precision-recall titik apex" width="1400" height="598" loading="lazy"></div><p class="note">Garis merah = pipeline final; lingkaran = titik operasi (P 0,803; R 0,825). Batas ketelitian label untuk AP titik @0,30 m = 0,994.</p></div>
+<div class="card"><h3>Seluruh 850 radargram</h3><p class="note">Validasi silang 5 lipatan: F1 0,760, AP titik @0,30 m 0,867. Per pohon pada titik operasi R70 (skala 0,50–1,00):</p><div class="legend"><span><i style="background:var(--leaf)"></i>precision</span><span><i style="background:var(--bark)"></i>recall</span></div><div class="duo" id="oof"></div></div>
+</div></details>
+</div></section>
+
+<!-- ================= ADEGAN 3D: dari B-scan ke akar ================= -->
+<section class="pin" id="akar3d" aria-label="Rekonstruksi akar 3D dari B-scan">
+<canvas id="gl" aria-hidden="true"></canvas>
+<div class="bscan" id="bscan"><div class="bs-in"><img src="img/radargram_bersih.jpg" alt="Citra B-scan pohon AG03 dengan lima titik puncak hiperbola" width="1035" height="1150"><svg viewBox="0 0 1035 1150" aria-hidden="true"><g class="apx" id="apxB"></g></svg></div><span class="bs-lab">B-scan · AG03</span></div>
+<div class="pin-title"><span class="kicker"><b>04 · Langkah 2</b></span><h2>Dari B-scan<br>ke akar 3D</h2></div>
+<div class="compass">U ↑ · skala tegak ×2</div>
+<div class="story" aria-live="polite"><div class="prog" id="prog"></div><div class="kicker" id="sK"></div><h3 id="sH"></h3><p id="sP"></p><div class="fact" id="sF"></div></div>
+<p class="ill">B-scan dan titik puncak: data asli AG03. Model 3D: ilustrasi dengan tata letak swath dan arah 6 akar primer dari data AG03; bentuk cabang disederhanakan. Gambar hasil asli ada di bawah.</p>
+</section>
+
+<!-- ================= AKURASI 3D + POHON ================= -->
+<section class="ch alt"><div class="in">
+<div class="ch-head rv"><span class="kicker"><b>04 · Hasil langkah 2</b></span><h2>Hasil nyata, dan lebih tepat dari cara lama.</h2><p>Gambar di bawah adalah keluaran asli penelitian untuk Pohon 1 (AG03). Akurasinya diuji pada 60 pohon sintetis yang akarnya sudah diketahui.</p></div>
+<div class="card rv" style="margin-bottom:24px"><div class="abc">
+<div class="plate"><img id="abcImg" src="img/t_c.jpg" alt="Rekonstruksi final Pohon 1" width="604" height="396"></div>
+<div style="display:flex;flex-direction:column;gap:14px"><div class="kicker"><b>Hasil asli</b> · Pohon 1 (AG03)</div><div class="tabs" id="abcTabs" role="group" aria-label="Tahap"></div><h4 id="abcH"></h4><p id="abcP"></p><p class="note mono" id="abcF" style="font-size:13px"></p></div>
+</div></div>
+<div class="grid2">
+<div class="card rv"><h3>Uji pada 60 pohon sintetis</h3>
+<div class="legend"><span><i style="background:var(--moss)"></i>GCN–GAN standar</span><span><i style="background:var(--bark)"></i>usulan</span></div>
+<div class="bars vs" id="synBars"></div>
+<p class="note">Kepala induk berarah lebih baik di 60 dari 60 pohon (p &lt; 0,0001). Fitur blended di GCN dan gerbang GCN di Bio-cGAN tidak menambah akurasi; dilaporkan sebagai ablasi.</p></div>
+<div class="card rv"><h3>Apa yang kami ubah</h3>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div><b>Induk yang dipilih, bukan ditebak.</b> <span class="dim">Setiap simpul memilih satu induk di antara ≤ 12 calon yang lebih dekat ke batang.</span></div>
+<div><b>Disetel tanpa label lapangan.</b> <span class="dim">Penyaring diatur agar titik yang dibuang = fraksi titik palsu (18,9%). Akar asli yang tetap dipakai naik dari 63,7% ke 82,7%.</span></div>
+<div><b>Mengikuti aturan tumbuh akar.</b> <span class="dim">Segmen terlalu miring (&gt; 30°) turun dari 0,90% ke 0,05%; naik-turun semu turun dari 0,025 ke 0,009 m/m.</span></div>
+</div></div>
+<div class="card wide rv" id="treeCard">
+<div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:end"><h3>Jelajahi delapan pohon</h3><span class="kicker">data lapangan per pohon</span></div>
+<div class="trees" id="trees" role="group" aria-label="Pilih pohon"></div>
+<div class="tstats" id="tstats"></div>
+<div class="legend"><span><i style="background:var(--moss)"></i>GCN–GAN standar</span><span><i style="background:var(--bark)"></i>usulan (final)</span></div>
+<div class="bars vs" id="treeBars"></div>
+<div class="imgs" id="treeImgs"></div>
+</div>
+</div>
+</div></section>
+
+<!-- ================= GALIAN ================= -->
+<section class="ch" id="galian"><div class="in">
+<div class="ch-head rv"><span class="kicker"><b>05 · Bukti lapangan</b></span><h2>Dicocokkan dengan galian.</h2><p>Pada lima pohon, akar pernah digali di cincin 0,8 m dari batang (Taufiqurahman, 2025). Cincin dibagi 36 titik, titik 1 di utara. Pilih pohon dan metode untuk melihat akar mana yang bertemu.</p></div>
+<div class="gal">
+<div class="ring" id="ring"></div>
+<div class="ctrls">
+<div class="ctrl"><span class="kicker">Pohon</span><div class="tabs" id="gTree"></div></div>
+<div class="ctrl"><span class="kicker">Metode</span><div class="tabs" id="gMethod"></div></div>
+<div class="ctrl"><span class="kicker">Akar galian</span><div class="tabs" id="gSet"></div></div>
+<div class="ctrl"><span class="kicker">Toleransi</span><div class="tabs" id="gTol"></div></div>
+<div class="score" id="score"></div>
+<p class="note" id="ringText" style="font-size:15px"></p>
+<table><thead><tr><th>Pohon 1–5, total</th><th class="n">TP</th><th class="n">FP</th><th class="n">FN</th><th class="n">F1</th></tr></thead><tbody id="tot"></tbody></table>
+</div>
+</div>
+<p class="callout rv" style="margin-top:40px">Radar baru merekam mulai sekitar 1,14 m dari batang, sehingga akar di cincin 0,8 m adalah hasil penyambungan ke arah batang, bukan hasil ukur. Karena itu kedua metode setara terhadap galian (uji McNemar p 0,63), dan keduanya di bawah root detector di tesis (F1 0,56–0,57) yang merekam tepat di cincin.</p>
+</div></section>
+
+<!-- ================= TEMUAN ================= -->
+<section class="ch alt" id="temuan"><div class="in">
+<div class="ch-head rv"><span class="kicker"><b>06 · Temuan</b></span><h2>Yang kami pelajari.</h2></div>
+<div class="finds">
+<div class="find rv"><b>0,903<small>AP titik @0,30 m</small></b><div><h3>Akar ditemukan sebagai titik, dalam meter.</h3><p>Precision 0,803 dan recall 0,825 (RetinaNet standar: F1 0,712 → usulan 0,814). Konsisten pada 850 radargram (F1 0,760).</p></div></div>
+<div class="find rv"><b>+0,007<small>F1 · p 0,031</small></b><div><h3>Sinyal dan lintasan tetangga membantu.</h3><p>Fitur fisika sinyal dan kesinambungan antar-lintasan pada late fusion memberi kenaikan kecil tetapi bermakna, dan saling melengkapi (p 0,005).</p></div></div>
+<div class="find rv"><b>0,809<small>akurasi topologi</small></b><div><h3>GCN yang tahu arah ke batang.</h3><p>Akurasi topologi naik dari 0,312 ke 0,809 pada data sintetis. Di lapangan setara metode standar terhadap galian (MAE jumlah akar 2,8 vs 3,2), dengan akar lebih mulus.</p></div></div>
+</div>
+<div class="why">
+<div class="rv"><h4>Memantau tanpa merusak</h4><p>Pohon di hutan kota dan kawasan konservasi dapat diperiksa akarnya tanpa digali.</p></div>
+<div class="rv"><h4>Dasar menilai risiko tumbang</h4><p>Sebaran, kedalaman, dan arah akar menjadi data untuk menilai stabilitas pohon.</p></div>
+<div class="rv"><h4>Langkah berikutnya</h4><p>Menghubungkan arsitektur akar dengan bentuk batang (taper) dan tajuk.</p></div>
+</div>
+</div></section>
+
+<footer><div class="in">
+<div style="display:flex;flex-direction:column;gap:18px">
+<h2>Siti Khotimatul Wildah</h2>
+<div class="credit"><span>Program Studi Doktor Ilmu Komputer, Sekolah Sains Data, Matematika, dan Informatika, IPB University</span><span class="dim">Komisi pembimbing: Prof. Dr. Ir. Agus Buono (Ketua) · Dr. Aziz Kustiyo · Dr. Shelvie Nidya Neyman · Prof. Dr. Lina Karlinasari</span><span class="dim">Poster Session SPs IPB · Senin, 2 November 2026</span><span class="dim">Terima kasih: HPGW, PT Exact Global Teknologi (data GPR), M. Taufiqurahman (data galian).</span></div>
+<div class="refs"><span class="kicker">Referensi utama</span>
+<span>Lin TY, Goyal P, Girshick R, He K, Dollár P. 2017. Focal loss for dense object detection. ICCV.</span>
+<span>Kipf TN, Welling M. 2017. Semi-supervised classification with graph convolutional networks. ICLR.</span>
+<span>Goodfellow I, et al. 2014. Generative adversarial nets. NeurIPS.</span>
+<span>Lu G, Lu Y. 2022. 3D modeling beneath ground: plant root detection and reconstruction based on ground-penetrating radar. WACV.</span>
+<span>Zhou Y, Lu G. 2026. Underground plant exploration: non-destructive 3D root assessment with GPR based on point graph neural network. CVPR.</span>
+<span>Taufiqurahman M. 2025. Validasi distribusi radial akar pohon Agathis yang diuji menggunakan alat nondestruktif root detector [tesis]. IPB University.</span></div>
+</div>
+<div><span class="kicker" style="display:block;margin-bottom:10px">Catatan & istilah</span>
+<details><summary>Bagian mana yang ilustrasi?</summary><p>Adegan pohon dan alat GPR (bab 01–02) adalah ilustrasi penjelas. Pada adegan 3D, citra B-scan dan titik puncak adalah data asli AG03, tata letak swath dan arah 6 akar primer mengikuti data AG03, sedangkan bentuk cabang disederhanakan. Radargram, angka hasil, dan gambar akar 3D di bagian hasil berasal dari keluaran penelitian.</p></details>
+<details><summary>Satuan dan kedalaman</summary><p>Posisi dalam meter dengan pusat batang (0, 0). Kedalaman dari kalibrasi sumbu radargram vendor, sehingga bergantung pada asumsi kecepatan gelombang di tanah.</p></details>
+<details><summary>Data latih rekonstruksi</summary><p>GCN dan GAN dilatih pada akar Agathis sintetis yang disampel dengan tata letak survei dan derau yang sama dengan lapangan (titik palsu ±19%).</p></details>
+<details><summary>Precision, recall, F1</summary><p>Precision: dari titik yang ditebak sebagai akar, bagian yang benar. Recall: dari semua akar, bagian yang ditemukan. F1: rata-rata harmonik keduanya.</p></details>
+<details><summary>Mengapa AP titik, bukan AP50 kotak?</summary><p>Kotak hiperbola sangat tipis (±0,22 m). Geser label 5–7 cm saja menurunkan AP50 dari 0,86 ke 0,44. AP50 model tunggal (0,642) sudah setara batas ketelitian label (0,639).</p></details>
+</div>
+</div></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+(function(){
+'use strict';
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const HAS=!!(window.gsap&&window.ScrollTrigger)&&!RM;
+const fmt=(x,d=3)=>x.toFixed(d).replace('.',',');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function rng(seed){let s=seed>>>0;return()=>{s=(s+0x6D2B79F5)>>>0;let t=s;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
+function tabs(el,opts,cur,on){el.innerHTML='';opts.forEach(o=>{const b=document.createElement('button');b.type='button';b.textContent=o.label;b.setAttribute('aria-pressed',String(o.key===cur));b.addEventListener('click',()=>{[...el.children].forEach(c=>c.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');on(o.key)});el.appendChild(b)})}
+document.documentElement.classList.add(HAS?'js-st':'static');
+if(HAS)gsap.registerPlugin(ScrollTrigger);
+
+/* ---------- pemecah kata (untuk animasi per kata) ---------- */
+function splitWords(el){if(!el||el.dataset.split)return[];el.dataset.split=1;const out=[];
+ (function walk(node,parent){[...node.childNodes].forEach(n=>{if(n.nodeType===3){const parts=n.textContent.split(/(\s+)/);const frag=document.createDocumentFragment();parts.forEach(p=>{if(!p)return;if(/^\s+$/.test(p)){frag.appendChild(document.createTextNode(p));return}const w=document.createElement('span');w.className='w';const i=document.createElement('span');i.textContent=p;w.appendChild(i);frag.appendChild(w);out.push(i)});n.replaceWith(frag)}else if(n.nodeType===1){walk(n)}})})(el);return out}
+
+/* ---------- hero ---------- */
+(function(){const items=[['0,803','precision'],['0,825','recall'],['0,903','AP titik @0,30 m'],['0,809','akurasi topologi'],['2.376','akar berlabel'],['850','radargram'],['8','pohon Agathis']];
+ const one=items.map(([b,s])=>'<span class="it"><b>'+b+'</b><span>'+s+'</span></span><span class="sep">✻</span>').join('');$('#ticker').innerHTML=one+one;})();
+(function leaves(){const g=$('#leaves');if(!g)return;const R=rng(3);let h='';for(let i=0;i<7;i++){const x=150+R()*240,y=110+R()*140;h+='<path class="lf" d="M0 0 C 6 -8 16 -8 20 0 C 16 8 6 8 0 0 Z" fill="'+(['#6FAE66','#4C8F4F','#9CCB8C'][i%3])+'" transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"/>'}g.innerHTML=h;
+ if(!HAS)return;$$('.lf',g).forEach((lf,i)=>{const tl=gsap.timeline({repeat:-1,delay:i*1.3});tl.fromTo(lf,{opacity:0},{opacity:1,duration:.4}).to(lf,{x:'+='+(R()*120-40),y:'+='+(300+R()*120),rotation:360*(R()<.5?-1:1),duration:6+R()*3,ease:'sine.inOut'},0).to(lf,{opacity:0,duration:.6},'-=.8')})})();
+if(HAS){const w=splitWords($('#heroH'));gsap.from(w,{yPercent:110,rotate:4,duration:1.2,ease:'expo.out',stagger:.07,delay:.1});
+ gsap.from(['#heroP','#heroC','.hero .cue'],{y:24,opacity:0,duration:1,ease:'expo.out',stagger:.1,delay:.55});
+ gsap.from('#heroTree',{y:40,opacity:0,scale:.96,transformOrigin:'50% 100%',duration:1.4,ease:'expo.out',delay:.2});
+ gsap.to('#hill1',{y:-40,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+ gsap.to('#hill2',{y:-80,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+ gsap.to('#heroTree',{y:60,ease:'none',scrollTrigger:{trigger:'.hero',start:'top top',end:'bottom top',scrub:true}});
+ // ticker condong mengikuti kecepatan gulir
+ const tk=$('#ticker');let sk=0;ScrollTrigger.create({onUpdate:s=>{const v=gsap.utils.clamp(-14,14,s.getVelocity()/180);if(Math.abs(v)>Math.abs(sk))sk=v;}});gsap.ticker.add(()=>{sk*=.9;tk.style.transform='skewX('+(-sk).toFixed(2)+'deg)'});
+}
+
+/* ---------- progres + bab ---------- */
+const chapLinks=$$('.chap a'),chapSecs=chapLinks.map(a=>$(a.getAttribute('href')));
+function onScroll(){const st=scrollY,dh=document.documentElement.scrollHeight-innerHeight;$('#progress').style.width=(dh>0?st/dh*100:0)+'%';let cur=-1;chapSecs.forEach((s,i)=>{if(s&&s.getBoundingClientRect().top<innerHeight*.5)cur=i});chapLinks.forEach((a,i)=>a.classList.toggle('on',i===cur))}
+addEventListener('scroll',onScroll,{passive:true});onScroll();
+
+/* ---------- reveal ---------- */
+(function(){if(!HAS)return;const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove('pre');io.unobserve(e.target)}}),{rootMargin:'0px 0px -6% 0px'});
+ $$('.rv').forEach(el=>{if(el.getBoundingClientRect().top>innerHeight){el.classList.add('pre');io.observe(el)}})})();
+
+/* ---------- mesin adegan (pin + scrub + teks per langkah) ---------- */
+function scene(id,build,opts={}){
+ const sec=$('#'+id);const n=+sec.dataset.n;const caps=$$('.cap',sec);const stepsEl=$('.steps',sec);
+ stepsEl.innerHTML=caps.map(()=>'<i><b></b></i>').join('');const bars=$$('b',stepsEl);
+ const tl=HAS?gsap.timeline({paused:true,defaults:{ease:'none'}}):null;
+ if(tl){build(tl);tl.set({},{},n)}
+ let cur=-1;
+ function show(i){if(i===cur)return;const prev=cur;cur=i;caps.forEach((c,j)=>c.classList.toggle('on',j===i));
+  if(HAS){const c=caps[i];const h=$('h2',c),ps=$$('p',c);if(!c.dataset.sp){splitWords(h);c.dataset.sp=1}
+   gsap.fromTo($$('.w>span',h),{yPercent:105},{yPercent:0,duration:.8,ease:'expo.out',stagger:.035,overwrite:true});
+   gsap.fromTo([$('.k',c),...ps],{y:18,opacity:0},{y:0,opacity:1,duration:.7,ease:'expo.out',stagger:.06,delay:.12,overwrite:true})}}
+ if(!HAS){caps.forEach(c=>c.classList.add('on'));if(opts.staticState)opts.staticState();return}
+ show(0);
+ ScrollTrigger.create({trigger:sec,start:'top top',end:()=>'+='+(innerHeight*(opts.len||1)*n*.85),pin:true,scrub:true,anticipatePin:1,
+  onUpdate:s=>{const p=s.progress;const target=p*n;gsap.to(tl,{time:target,duration:.6,ease:'power3.out',overwrite:true});const i=Math.min(n-1,Math.floor(p*n*.9999));show(i);bars.forEach((b,j)=>b.style.width=(j<i?100:j===i?(p*n-i)*100:0)+'%')}});
+}
+
+/* ===== ADEGAN 1: pohon ===== */
+(function(){const roots=$$('#roots path');
+ roots.forEach(p=>{p.style.strokeDasharray='1';p.style.strokeDashoffset=HAS?'1':'0'});
+ $$('#wind path').forEach(p=>{p.style.strokeDasharray='1';p.style.strokeDashoffset=HAS?'1':'0'});
+ scene('mengapa',tl=>{
+  tl.to('#wind path',{strokeDashoffset:0,duration:.5,stagger:.08},1.0)
+    .to('#crown',{rotation:5,svgOrigin:'500 330',duration:.35,ease:'sine.inOut'},1.05).to('#crown',{rotation:-2,svgOrigin:'500 330',duration:.3,ease:'sine.inOut'},1.4).to('#crown',{rotation:0,svgOrigin:'500 330',duration:.25},1.7)
+    .to('#wind path',{opacity:0,duration:.3},1.75)
+    .to(['#cover','#cover2'],{opacity:.1,duration:.5},2.0)
+    .to(roots,{strokeDashoffset:0,duration:.6,stagger:.03},2.1)
+    .to('#annot',{opacity:1,duration:.4},3.05).fromTo('#annot path',{scale:.85,transformOrigin:'50% 50%'},{scale:1,duration:.5,ease:'back.out(2)'},3.05)
+    .to('#annot',{opacity:0,duration:.3},4.0)
+    .to(['#cover','#cover2'],{opacity:1,duration:.5},4.05)
+    .fromTo('#qmark',{opacity:0,scale:.5,svgOrigin:'500 500'},{opacity:1,scale:1,svgOrigin:'500 500',duration:.5,ease:'back.out(2.2)'},4.3)
+    .to('#qmark',{opacity:0,duration:.25},5.0)
+    .fromTo('#shovel',{opacity:0,x:120,rotation:12,svgOrigin:'660 300'},{opacity:1,x:0,rotation:0,svgOrigin:'660 300',duration:.45,ease:'back.out(1.6)'},5.05)
+    .to('#pit',{opacity:1,duration:.4},5.35);
+ },{staticState:()=>{$('#cover').style.opacity=.1;$('#cover2').style.opacity=.1;$('#annot').style.opacity=1}});
+})();
+
+/* ===== ADEGAN 2: GPR ===== */
+(function(){
+ const ROOTS=[[230,330],[440,430],[650,360],[840,480]];
+ $('#rootsX').innerHTML=ROOTS.map(([x,y])=>'<ellipse cx="'+x+'" cy="'+y+'" rx="15" ry="11"/>').join('');
+ const hyp=([x0,y0])=>{let d='';for(let x=x0-170;x<=x0+170;x+=5){const y=232+Math.sqrt((y0-232)**2+((x-x0)*.95)**2);d+=(d?'L':'M')+x+' '+y.toFixed(1)+' '}return d};
+ $('#hyps').innerHTML=ROOTS.map(r=>'<path pathLength="1" d="'+hyp(r)+'" style="stroke-dasharray:1;stroke-dashoffset:'+(HAS?1:0)+'"/>').join('');
+ // tekstur radargram (deterministik) dengan hiperbola pada posisi akar yang sama
+ (function(){const W=500,H=184,cv=document.createElement('canvas');cv.width=W;cv.height=H;const c=cv.getContext('2d'),img=c.createImageData(W,H),R=rng(11);
+  const rk=(d,s)=>{const q=(d/s)**2;return(1-2*q)*Math.exp(-q)};
+  for(let x=0;x<W;x++)for(let y=0;y<H;y++){let v=0;for(let L=0;L<7;L++)v+=.25*rk(y-(10+L*25+3*Math.sin(x/30+L)),1.6);
+   ROOTS.forEach(([rx,ry])=>{const X=rx/2,Y=(ry-232)/2,dx=x-X;if(Math.abs(dx)>90)return;const t=Math.sqrt(Y*Y+(dx*.95)**2);v+=.9*rk(y-t,1.5)*Math.exp(-Math.abs(dx)/80)});
+   v+=(R()-.5)*.25;const g=Math.max(0,Math.min(1,.55+v*.5));const i=(y*W+x)*4;img.data[i]=40+g*205;img.data[i+1]=40+g*205;img.data[i+2]=38+g*200;img.data[i+3]=255}
+  c.putImageData(img,0,0);$('#rgTex').setAttribute('href',cv.toDataURL('image/png'))})();
+ const X0=90,X1=930,T0=1.0,T1=2.35;const tAt=x=>T0+(x-X0)/(X1-X0)*(T1-T0);
+ scene('radar',tl=>{
+  tl.to('#cart',{x:X1-X0,duration:T1-T0},T0);
+  $$('#hyps path').forEach((p,i)=>{const [x0]=ROOTS[i];tl.to(p,{strokeDashoffset:0,duration:tAt(x0+170)-tAt(x0-170)},tAt(x0-170))});
+  tl.to('#rgTex',{opacity:1,duration:.4},2.4).to(['#soilB','#layB1','#layB2','#stones','#rootsX'],{opacity:0,duration:.4},2.4).to('#hyps',{opacity:.35,duration:.4},2.5).to('#cart',{opacity:.5,duration:.3},2.5);
+ },{staticState:()=>{}});
+ if(HAS){$$('#waves .wv').forEach((w,i)=>gsap.fromTo(w,{opacity:.9,scale:.6,transformOrigin:'50% 0%'},{opacity:0,scale:1.25,transformOrigin:'50% 0%',duration:1.6,repeat:-1,delay:i*.5,ease:'sine.out'}))}
+})();
+
+/* ===== ADEGAN 3: masalah radargram ===== */
+const AP=[[661,418],[898,448],[481,517],[337,601],[865,646]];
+(function(){
+ $('#hbBoxes').innerHTML=AP.map(([x,y])=>'<rect x="'+(x-60)+'" y="'+(y-36)+'" width="120" height="96" rx="8"/>').join('');
+ // derau bergerak
+ const cv=$('#noise'),c=cv.getContext('2d');cv.width=260;cv.height=290;let on=false,last=0;
+ function drawNoise(t){if(on&&t-last>90){last=t;const d=c.createImageData(260,290);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=v;d.data[i+1]=v;d.data[i+2]=v;d.data[i+3]=255}c.putImageData(d,0,0)}requestAnimationFrame(drawNoise)}requestAnimationFrame(drawNoise);
+ const gh=$$('#rgProblem .ghost');const fan=[[-20,-14,-6],[18,-12,5],[-12,14,-3],[22,16,7],[-26,4,-8],[26,-2,9]];
+ scene('masalah',tl=>{
+  tl.to('#noise',{opacity:.38,duration:.4,onStart:()=>on=true,onReverseComplete:()=>on=false},1.0).to('#hbBoxes',{opacity:1,duration:.3},1.2).fromTo('#hbBoxes rect',{scale:.6,transformOrigin:'50% 50%'},{scale:1,duration:.4,stagger:.05,ease:'back.out(2)'},1.2)
+    .to('#hbBoxes',{opacity:0,duration:.25},1.95).to('#noise',{opacity:0,duration:.25},1.95)
+    .to('#rgProblem .main',{scale:.62,duration:.5,ease:'power2.inOut'},2.0);
+  gh.forEach((g,i)=>{const[x,y,r]=fan[i];tl.to(g,{opacity:1,xPercent:x,yPercent:y,rotation:r,scale:.62,duration:.5,ease:'power2.out'},2.05+i*.03)});
+  tl.fromTo('#count850',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.45,ease:'back.out(1.8)'},2.35)
+    .to('#count850',{opacity:0,duration:.25},3.0).to(gh,{opacity:.35,duration:.3},3.0).to('#rgProblem .main',{filter:'grayscale(1) blur(1px)',duration:.4},3.05);
+ },{staticState:()=>{$('#hbBoxes').style.opacity=1}});
+})();
+
+/* ===== pernyataan: kata menyala saat digulir ===== */
+(function(){const p=$('#stmt p');const wrapWords=el=>{[...el.childNodes].forEach(n=>{if(n.nodeType===3){const f=document.createDocumentFragment();n.textContent.split(/(\s+)/).forEach(t=>{if(!t)return;if(/^\s+$/.test(t)){f.appendChild(document.createTextNode(t));return}const s=document.createElement('span');s.className='wd';s.textContent=t;f.appendChild(s)});n.replaceWith(f)}else if(n.nodeType===1)wrapWords(n)})};wrapWords(p);
+ if(!HAS)return;const ws=$$('.wd',p);gsap.to(ws,{opacity:1,stagger:.1,ease:'none',scrollTrigger:{trigger:'#stmt',start:'top 75%',end:'bottom 45%',scrub:true}});
+ gsap.from('.solc .pop circle',{scale:0,transformOrigin:'50% 50%',duration:.7,ease:'back.out(3)',stagger:.15,scrollTrigger:{trigger:'.sol',start:'top 75%'}});
+ $$('.solc .lnk path').forEach(p=>{p.style.strokeDasharray='1';p.style.strokeDashoffset='1'});gsap.to('.solc .lnk path',{strokeDashoffset:0,duration:1.2,ease:'expo.out',stagger:.15,scrollTrigger:{trigger:'.sol',start:'top 75%'}});
+ // kartu miring mengikuti kursor (desktop)
+ if(matchMedia('(hover:hover)').matches)$$('[data-tilt]').forEach(c=>{c.addEventListener('pointermove',e=>{const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;gsap.to(c,{rotateY:x*8,rotateX:-y*8,transformPerspective:900,duration:.5,ease:'power3.out'})});c.addEventListener('pointerleave',()=>gsap.to(c,{rotateX:0,rotateY:0,duration:.8,ease:'elastic.out(1,.5)'}))});
+})();
+
+/* ===== ADEGAN 4: computer vision membaca ===== */
+(function(){
+ $('#apxAI').innerHTML=AP.map(([x,y],i)=>'<g class="a"><circle class="p" cx="'+x+'" cy="'+y+'" r="28" style="animation-delay:'+(i*.3)+'s"/><circle class="c" cx="'+x+'" cy="'+y+'" r="28"/><text x="'+(x+36)+'" y="'+(y-30)+'">'+(i+1)+'</text></g>').join('');
+ const rg=$('#rgAI');const io=new IntersectionObserver(e=>rg.classList.toggle('pulse',e[0].isIntersecting));io.observe(rg);
+ const order=AP.map((p,i)=>[p[0],i]).sort((a,b)=>a[0]-b[0]);
+ scene('ai',tl=>{
+  tl.set('#scanAI',{left:'0%',opacity:1},0).to('#scanAI',{left:'100%',duration:1.6,ease:'none'},.05).to('#scanAI',{opacity:0,duration:.2},1.65);
+  order.forEach(([x,i])=>{const g=$$('#apxAI .a')[i];const t=.05+x/1035*1.6;tl.fromTo(g,{opacity:0,scale:.3,transformOrigin:'50% 50%'},{opacity:1,scale:1,transformOrigin:'50% 50%',duration:.25,ease:'back.out(3)',immediateRender:true},t)});
+  tl.fromTo('#xyzAI',{opacity:0,y:20},{opacity:1,y:0,duration:.35,ease:'expo.out'},2.1);
+ },{staticState:()=>{$('#xyzAI').style.opacity=1}});
+})();
+
+/* ===== hasil: waffle ===== */
+function waffle(el,val){let h='';for(let i=0;i<100;i++){const full=i+1<=val,part=!full&&i<val;h+='<i class="'+(full?'on':part?'part':'')+'"'+(part?' style="--cut:'+((1-(val-i))*100).toFixed(0)+'%"':'')+'></i>'}el.innerHTML=h;
+ if(!HAS)return;const dots=$$('i',el);gsap.from(dots,{scale:.2,opacity:.25,duration:.5,ease:'back.out(2)',stagger:{each:.008,from:'start'},scrollTrigger:{trigger:el,start:'top 80%'}})}
+waffle($('#gridP'),80.3);waffle($('#gridR'),82.5);
+if(HAS){[['#wfP',80.3],['#wfR',82.5]].forEach(([s,v])=>{const el=$(s),sm=el.querySelector('small').outerHTML;const o={v:0};gsap.to(o,{v,duration:1.6,ease:'expo.out',scrollTrigger:{trigger:el,start:'top 82%'},onUpdate:()=>el.innerHTML=fmt(o.v,1)+sm})})}
+
+/* ===== batang ===== */
+function bars(el,rows,lo,hi){el.innerHTML=rows.map(r=>'<div class="brow'+(r.hl?' hl':'')+'"><div class="k">'+r.k+'</div><div class="track"><div class="fill" data-w="'+((r.v-lo)/(hi-lo)*100).toFixed(2)+'"></div></div><div class="v">'+fmt(r.v)+'</div></div>').join('');grow(el)}
+function grow(el){const go=()=>$$('.fill',el).forEach(f=>f.style.width=Math.max(0,Math.min(100,+f.dataset.w))+'%');
+ if(!HAS){go();return}const r=el.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){requestAnimationFrame(()=>requestAnimationFrame(go));return}
+ go();$$('.fill',el).forEach(f=>{f.style.transition='none';f.style.width='0'});void el.offsetWidth;$$('.fill',el).forEach(f=>f.style.transition='');
+ const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();go()}},{threshold:.25});io.observe(el)}
+const STAGES=[['RetinaNet standar<small>detektor kotak biasa</small>',0.669,0.761,0.712,0.832],['+ kepala apex<small>menunjuk titik puncak</small>',0.742,0.776,0.758,0.871],['+ gabungan 10 model<small>ensemble + citra dicerminkan</small>',0.793,0.797,0.795,0.900],['+ sinyal & lintasan tetangga<small>blended late fusion</small>',0.781,0.825,0.803,0.901],['Pipeline final<small>+ relokalisasi + NMS titik</small>',0.803,0.825,0.814,0.903]];
+const NOTE={1:'Precision (ketepatan) naik paling besar saat model diminta menunjuk titik puncak (+0,073).',2:'Recall (yang ditemukan) naik terutama dari fitur sinyal dan lintasan tetangga (0,797 → 0,825).',3:'F1 naik bertahap dari 0,712 ke 0,814. Standar = rata-rata 5 seed, kepala apex = rata-rata 10 seed.',4:'AP titik @0,30 m menembus 0,90 setelah 10 model digabung; batas yang diizinkan ketelitian label adalah 0,994.'};
+function drawStage(k){bars($('#stageBars'),STAGES.map((r,i)=>({k:r[0],v:r[k],hl:i===4})),0.6,1.0);$('#stageNote').textContent=NOTE[k]}
+tabs($('#mTabs'),[{key:3,label:'F1'},{key:1,label:'Ketepatan (P)'},{key:2,label:'Ditemukan (R)'},{key:4,label:'AP @0,30 m'}],3,drawStage);drawStage(3);
+const DET=[['RetinaNet',0.789,0.611,0.620],['FCOS',0.780,0.577,0.623],['YOLOv11m',0.710,0.557,0.571],['SSD300',0.719,0.537,0.568]];
+function drawDet(k){bars($('#detBars'),DET.map((r,i)=>({k:r[0],v:r[k],hl:i===0})),0.5,0.9)}
+tabs($('#dTabs'),[{key:2,label:'AP50'},{key:1,label:'AP30'},{key:3,label:'F1'}],2,drawDet);drawDet(2);
+$('details.more').addEventListener('toggle',e=>{if(e.target.open){drawDet(2);$$('#oof .fill').forEach(f=>f.style.width=f.dataset.w+'%')}});
+(function(){const M=[['Statistik terbaik',[.875,.877,.871]],['Fisika terbaik',[.874,.870,.872]],['Gabungan',[.871,.871,.875]]];let h='<div class="h"></div><div class="h">Mid</div><div class="h">Head</div><div class="h">Late</div>';
+ M.forEach(([k,v],i)=>{h+='<div class="r">'+k+'</div>';v.forEach((x,j)=>{const t=Math.max(0,Math.min(1,(x-.866)/.012));h+='<div class="t'+(i===1&&j===2?' pick':'')+'" style="background:color-mix(in oklab,var(--bark) '+Math.round(12+t*58)+'%,var(--mist));color:'+(t>.55?'var(--paper)':'var(--ink)')+'">'+fmt(x)+'</div>'})});$('#mx').innerHTML=h})();
+(function(){const C1=[['AG03',264,50,111],['AG01',220,52,104],['AG04',303,51,95],['AG05',180,31,76],['AG06',203,56,88],['AG07',173,52,89],['AG08',158,39,66],['AG09',167,57,79]];
+ $('#oof').innerHTML=C1.map(([id,tp,fp,fn],i)=>{const P=tp/(tp+fp),R=tp/(tp+fn);return '<div class="drow"><div class="k">Pohon '+(i+1)+'<small>'+id+' · P '+fmt(P,2)+' · R '+fmt(R,2)+'</small></div><div class="pair"><div class="track"><div class="fill p" data-w="'+((P-.5)/.5*100).toFixed(1)+'"></div></div><div class="track"><div class="fill r" data-w="'+((R-.5)/.5*100).toFixed(1)+'"></div></div></div></div>'}).join('')})();
+
+/* ===== ADEGAN 3D: dari B-scan ke akar 3D ===== */
+const STEPS3=[
+ {k:'Mulai dari citra B-scan',h:'Satu radargram, lima akar.',p:'Ini citra B-scan asli dari pohon AG03. Model computer vision menandai puncak setiap hiperbola: di titik inilah akar memotong lintasan radar.',f:'Data asli: radargram AG03, lima titik puncak berlabel.'},
+ {k:'Dari 2D ke 3D',h:'Setiap lintasan punya alamat.',p:'Posisi setiap lintasan di sekitar pohon diketahui. Karena itu setiap puncak di B-scan bisa diberi koordinat X, Y, dan kedalaman Z dalam meter.',f:'Pohon 1 (AG03): 12 swath, masing-masing 10 lintasan berjarak ±8 cm.'},
+ {k:'Titik apex',h:'Ribuan titik dari 850 radargram.',p:'Semua puncak dari semua lintasan dikumpulkan di sekitar batang. Sebagian adalah pantulan palsu dari batu atau air.',f:'850 radargram → 2.056 titik (titik operasi R70, precision 0,811). AG03: 314 titik.'},
+ {k:'BF-GCN',h:'Titik palsu disaring.',p:'Titik kembar digabung menjadi simpul graf. GCN menilai setiap simpul bersama tetangganya; yang tidak cocok dengan pola akar dibuang.',f:'Threshold dikalibrasi tanpa label: titik dibuang = fraksi titik palsu 18,9%.'},
+ {k:'Kepala induk berarah',h:'Setiap titik memilih induknya.',p:'Setiap simpul memilih satu induk yang lebih dekat ke batang. Hasilnya pohon akar tanpa putaran: setiap cabang tahu asalnya.',f:'Akurasi induk 0,809 (jalur terpendek: 0,312) pada 60 pohon sintetis.'},
+ {k:'Kurva halus',h:'Titik menjadi akar.',p:'Urutan simpul diubah menjadi kurva akar: kemiringan dibatasi 35°, arah menjauh dari batang, kedalaman dihaluskan.',f:'Naik-turun kedalaman semu turun dari 0,025 ke 0,009 m/m.'},
+ {k:'Bio-cGAN',h:'Celah dekat batang diisi.',p:'Radar baru mulai sekitar 1,15 m dari batang. Bagian itu diisi kurva dari GAN bersyarat: keluar mendatar dari leher akar, lalu menurun.',f:'AG03 final: 6 akar primer, 23 sekunder, 7 tersier, panjang total 61,5 m.'}];
+let setStep3=()=>{};
+(function(){
+ const N=STEPS3.length,prog=$('#prog');prog.innerHTML=STEPS3.map(()=>'<i><b></b></i>').join('');const bars=$$('b',prog);
+ const sK=$('#sK'),sH=$('#sH'),sP=$('#sP'),sF=$('#sF');let cur=-1;
+ setStep3=(i,frac)=>{bars.forEach((b,j)=>b.style.width=(j<i?100:j===i?Math.round(frac*100):0)+'%');if(i===cur)return;cur=i;const s=STEPS3[i];
+  sK.textContent=(i+1)+' / '+N+' · '+s.k;sH.textContent=s.h;sP.textContent=s.p;sF.textContent=s.f;
+  if(HAS){splitWords(sH);gsap.fromTo($$('.w>span',sH),{yPercent:105},{yPercent:0,duration:.75,ease:'expo.out',stagger:.04,overwrite:true});gsap.fromTo([sK,sP,sF],{y:14,opacity:0},{y:0,opacity:1,duration:.6,ease:'expo.out',stagger:.05,delay:.1,overwrite:true})}};
+ setStep3(0,0);
+})();
+(function(){
+ const sec=$('#akar3d'),cv=$('#gl'),bs=$('#bscan');
+ $('#apxB').innerHTML=AP.map(([x,y],i)=>'<g class="a"><circle class="c" cx="'+x+'" cy="'+y+'" r="30"/><text x="'+(x+38)+'" y="'+(y-32)+'">'+(i+1)+'</text></g>').join('');
+ const apxG=$$('#apxB .a');
+ const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),seg01=(p,a,b)=>clamp((p-a)/(b-a)),lerp=(a,b,t)=>a+(b-a)*t;
+ let W=innerWidth,H=innerHeight;const narrow=()=>W<820;
+ function placeB(p){ // posisi kartu B-scan: besar di awal, mengecil ke pojok kanan atas
+  const r=sec.getBoundingClientRect();W=r.width;H=r.height;
+  const h0=narrow()?H*.44:H*.72,w0=Math.min(h0*1035/1150,W*.86);const hh=w0*1150/1035;
+  const sx=narrow()?(W-w0)/2:W*.93-w0,sy=narrow()?H*.13:(H-hh)/2+18;
+  const sc=narrow()?.24:.26,ex=W-w0*sc-(narrow()?16:24),ey=narrow()?64:84;
+  const t=seg01(p,1/N3*.15,1/N3*.95),e=t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+  bs.style.width=w0+'px';bs.style.height=hh+'px';
+  bs.style.transform='translate('+lerp(sx,ex,e).toFixed(1)+'px,'+lerp(sy,ey,e).toFixed(1)+'px) scale('+lerp(1,sc,e).toFixed(4)+')';
+  bs.style.opacity=String(lerp(1,.92,e));
+  apxG.forEach((g,i)=>{const a=seg01(p,.012+i*.012,.03+i*.012);g.style.opacity=String(a);g.style.transformBox='fill-box';g.style.transformOrigin='center';g.style.transform='scale('+(.4+.6*a).toFixed(3)+')'});
+ }
+ const N3=STEPS3.length;
+ function fallback(){cv.remove();const d=document.createElement('div');d.className='fallback';d.innerHTML='<img src="img/t_c.jpg" alt="Rekonstruksi akar 3D final Pohon 1">';sec.insertBefore(d,sec.firstChild);bs.style.display='none';setStep3(N3-1,1)}
+ if(!window.THREE){placeB(0);fallback();return}
+ let renderer;try{renderer=new THREE.WebGLRenderer({canvas:cv,antialias:true,alpha:true})}catch(e){placeB(0);fallback();return}
+ const T=THREE,scene=new T.Scene(),cam=new T.PerspectiveCamera(38,1,.1,200);
+ renderer.setPixelRatio(Math.min(devicePixelRatio||1,1.6));
+ const EX=2.0,P=(x,y,d)=>new T.Vector3(x,-d*EX,-y),R=rng(31);
+ // akar: 6 primer pada azimut hasil AG03 (titik cincin 7,13,16,23,27,36)
+ const AZ=[60,120,150,220,260,350],roots=[];
+ function grow(az0,r0,d0,len,slope,wig){const pts=[];let az=az0,r=r0,d=d0,step=.12,ph=R()*6;for(let s=0;s<len;s+=step){r+=step;az+=Math.sin(ph+s*1.3)*wig;const flat=Math.max(0,1-s/.6);d=Math.min(1.1,d+step*slope*(1-flat)*(.55+.45*Math.exp(-s/1.6))+(R()-.5)*.004);const a=az*Math.PI/180;pts.push({x:r*Math.sin(a),y:r*Math.cos(a),d,r})}return pts}
+ AZ.forEach(az=>{const L=3.6+R()*1.6;const main=grow(az,.28,.1,L,.16+R()*.08,1.6);roots.push({pts:main,o:1});
+  const nb=3+Math.floor(R()*3);for(let k=0;k<nb;k++){const at=Math.floor(main.length*(.25+R()*.6));const b=main[at];const sg=R()<.5?-1:1;const az2=Math.atan2(b.x,b.y)*180/Math.PI+sg*(30+R()*35);
+   const br=grow(az2,0,b.d,.9+R()*1.4,.22+R()*.15,2.2).map(q=>{const x=b.x+q.r*Math.sin(az2*Math.PI/180),y=b.y+q.r*Math.cos(az2*Math.PI/180);return{x,y,d:q.d,r:Math.hypot(x,y)}});roots.push({pts:[b].concat(br),o:2})}});
+ // swath AG03 (tata_letak_swath.csv): sisi dan jarak tegak lurus (m)
+ const SW=[['B',1.5],['B',2.5],['B',3.5],['B',4.5],['T',1.5],['T',2.5],['U',1.5],['U',2.5],['U',3.5],['S',1.5],['S',2.5],['S',3.5]];
+ const lines=[];SW.forEach(([s,dd])=>{for(let k=0;k<10;k++){const off=dd+(k-4.5)*.08;lines.push(s==='B'||s==='T'?{ax:'x',v:s==='B'?-off:off}:{ax:'y',v:s==='U'?off:-off})}});
+ const group=new T.Group();scene.add(group);
+ const swMat=new T.MeshBasicMaterial({color:0x9CC3BD,transparent:true,opacity:0,side:T.DoubleSide,depthWrite:false});
+ SW.forEach(([s,dd])=>{const v=s==='B'||s==='T';const m=new T.Mesh(new T.PlaneGeometry(v?.8:7.2,v?7.2:.8),swMat);m.rotation.x=-Math.PI/2;if(s==='B')m.position.set(-dd,0,0);if(s==='T')m.position.set(dd,0,0);if(s==='U')m.position.set(0,0,-dd);if(s==='S')m.position.set(0,0,dd);group.add(m)});
+ const ringM=new T.MeshBasicMaterial({color:0xEF8656,transparent:true,opacity:0,side:T.DoubleSide});const ring=new T.Mesh(new T.RingGeometry(.79,.81,96),ringM);ring.rotation.x=-Math.PI/2;ring.position.y=.002;group.add(ring);
+ const grid=new T.PolarGridHelper(5,12,5,64,0x47362A,0x2C2119);grid.material.transparent=true;grid.material.opacity=.6;group.add(grid);
+ const trunk=new T.Mesh(new T.CylinderGeometry(.26,.3,1.4,32),new T.MeshStandardMaterial({color:0x6A452D,roughness:.9}));trunk.position.y=.55;group.add(trunk);
+ const ptsTrue=[],ptsRoot=[];
+ roots.forEach((rt,ri)=>{const p=rt.pts;for(let i=1;i<p.length;i++){const a=p[i-1],b=p[i];lines.forEach(L=>{const va=L.ax==='x'?a.x:a.y,vb=L.ax==='x'?b.x:b.y;if((va-L.v)*(vb-L.v)<0){const t=(L.v-va)/(vb-va);const o=L.ax==='x'?a.y+(b.y-a.y)*t:a.x+(b.x-a.x)*t;if(Math.abs(o)<3.6){ptsTrue.push({x:a.x+(b.x-a.x)*t,y:a.y+(b.y-a.y)*t,d:a.d+(b.d-a.d)*t});ptsRoot.push(ri)}}})}});
+ const nFalse=Math.round(ptsTrue.length*.19/.81),ptsFalse=[];for(let i=0;i<nFalse;i++){const L=lines[Math.floor(R()*lines.length)];const o=(R()-.5)*7;ptsFalse.push(L.ax==='x'?{x:L.v,y:o,d:.1+R()*.8}:{x:o,y:L.v,d:.1+R()*.8})}
+ function cloud(arr,color,size){const g=new T.BufferGeometry(),pos=new Float32Array(arr.length*3);arr.forEach((q,i)=>{const v=P(q.x,q.y,q.d);pos.set([v.x,v.y,v.z],i*3)});g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.PointsMaterial({color,size,sizeAttenuation:true,transparent:true,opacity:0,depthWrite:false});const o=new T.Points(g,m);group.add(o);return o}
+ const cTrue=cloud(ptsTrue,0xF2E9DC,.11),cFalse=cloud(ptsFalse,0xF2E9DC,.11);
+ function segs(pairs,color){const g=new T.BufferGeometry(),pos=new Float32Array(pairs.length*6);pairs.forEach(([a,b],i)=>{const va=P(a.x,a.y,a.d),vb=P(b.x,b.y,b.d);pos.set([va.x,va.y,va.z,vb.x,vb.y,vb.z],i*6)});g.setAttribute('position',new T.BufferAttribute(pos,3));const m=new T.LineBasicMaterial({color,transparent:true,opacity:0});const l=new T.LineSegments(g,m);group.add(l);return l}
+ const all=ptsTrue.concat(ptsFalse),knn=[];all.forEach((a,i)=>{all.map((b,j)=>[j,(a.x-b.x)**2+(a.y-b.y)**2+(a.d-b.d)**2]).filter(q=>q[0]!==i).sort((u,v)=>u[1]-v[1]).slice(0,3).forEach(([j,dd])=>{if(j>i&&dd<1.4)knn.push([a,all[j]])})});
+ const gEdges=segs(knn,0x9CC3BD);
+ const par=[];ptsTrue.forEach((a,i)=>{const ra=Math.hypot(a.x,a.y);let best=null,bd=1e9;ptsTrue.forEach((b,j)=>{if(ptsRoot[j]!==ptsRoot[i])return;if(Math.hypot(b.x,b.y)>=ra-.05)return;const dd=(a.x-b.x)**2+(a.y-b.y)**2;if(dd<bd){bd=dd;best=b}});par.push([a,best||{x:a.x*.28/ra,y:a.y*.28/ra,d:.1}])});
+ const pEdges=segs(par,0xEF8656);
+ const tubes=[],gaps=[],mRoot=new T.MeshStandardMaterial({color:0xA8724D,roughness:.75}),mRoot2=new T.MeshStandardMaterial({color:0x8A5A3A,roughness:.8}),mGap=new T.MeshStandardMaterial({color:0xEF8656,emissive:0xEF8656,emissiveIntensity:.6,roughness:.6});
+ roots.forEach(rt=>{const vs=rt.pts.map(q=>P(q.x,q.y,q.d));if(vs.length<3)return;
+  if(rt.o===1){const cut=rt.pts.findIndex(q=>q.r>1.15);const gv=vs.slice(0,Math.max(2,cut+1)),mv=vs.slice(Math.max(0,cut));
+   if(mv.length>2){const m=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(mv),mv.length*3,.045,8,false),mRoot);m.geometry.setDrawRange(0,0);group.add(m);tubes.push(m)}
+   if(gv.length>1){const m=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(gv.length>2?gv:[gv[0],gv[0].clone().lerp(gv[1],.5),gv[1]]),24,.05,8,false),mGap.clone());m.geometry.setDrawRange(0,0);group.add(m);gaps.push(m)}}
+  else{const m=new T.Mesh(new T.TubeGeometry(new T.CatmullRomCurve3(vs),vs.length*3,.025,6,false),mRoot2);m.geometry.setDrawRange(0,0);group.add(m);tubes.push(m)}});
+ scene.add(new T.AmbientLight(0xffffff,.55));const dl=new T.DirectionalLight(0xFFE8D0,1);dl.position.set(4,8,5);scene.add(dl);const dl2=new T.DirectionalLight(0x9CC3BD,.35);dl2.position.set(-5,-2,-4);scene.add(dl2);
+ function size(){const r=sec.getBoundingClientRect();W=r.width;H=r.height;renderer.setSize(W,H,false);cam.aspect=W/H;
+  if(narrow())cam.setViewOffset(W,H,0,H*.17,W,H);else cam.clearViewOffset();cam.updateProjectionMatrix()}
+ size();addEventListener('resize',()=>{size();placeB(prog)});
+ let prog=HAS?0:1,idle=0,visible=false;const io=new IntersectionObserver(e=>{visible=e[0].isIntersecting},{threshold:0});io.observe(sec);
+ function apply(p){const si=Math.min(N3-1,Math.floor(p*N3*.9999));setStep3(si,p*N3-si);placeB(p);
+  const q=seg01(p,1/N3,1); // fase 3D
+  cv.style.opacity=String(.25+.75*seg01(p,.6/N3,1.2/N3));
+  swMat.opacity=.2*seg01(q,0,.12)*(1-.6*seg01(q,.5,.7));
+  cTrue.material.opacity=seg01(q,.17,.3);cFalse.material.opacity=seg01(q,.17,.3)*(1-.92*seg01(q,.36,.48));cFalse.material.size=.11*(1-.6*seg01(q,.36,.48));
+  gEdges.material.opacity=.45*seg01(q,.34,.42)*(1-seg01(q,.5,.56));
+  pEdges.material.opacity=.95*seg01(q,.5,.6)*(1-.8*seg01(q,.7,.78));
+  const tp=seg01(q,.67,.84);tubes.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*tp/3)*3)});
+  cTrue.material.opacity*=(1-.75*seg01(q,.8,.9));
+  const gp=seg01(q,.85,.97);gaps.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*gp/3)*3);m.material.emissiveIntensity=.9-.6*seg01(q,.95,1)});
+  ringM.opacity=.8*seg01(q,.9,1);return q}
+ function render(){requestAnimationFrame(render);if(!visible)return;if(HAS)idle+=.0016;const q=apply(prog);
+  const ang=.9+q*1.9+idle,rad=narrow()?16:12.5,el=.62-q*.18;cam.position.set(Math.sin(ang)*rad*Math.cos(el),Math.sin(el)*rad,Math.cos(ang)*rad*Math.cos(el));cam.lookAt(narrow()?0:-1.4,-.9,0);renderer.render(scene,cam)}
+ requestAnimationFrame(render);placeB(prog);
+ if(HAS){let target=0;ScrollTrigger.create({trigger:sec,start:'top top',end:()=>'+='+(innerHeight*(narrow()?4.6:5.6)),pin:true,scrub:true,anticipatePin:1,onUpdate:s=>{target=s.progress}});
+  gsap.ticker.add(()=>{prog+=(target-prog)*.12})}
+ else{apply(1)}
+})();
+
+/* ---------- A/B/C hasil asli ---------- */
+(function(){const TR={a:['img/t_a.jpg','A. BF-GCN','Titik yang lolos penyaring disambung mengikuti induk pilihan GCN. Celah dekat batang masih diisi kurva Hermite.','178 → 92 simpul · 6 akar primer · 44,1 m · sebelum kalibrasi lapangan'],
+ b:['img/t_b.jpg','B. + Bio-cGAN','Celah leher akar dan antar-swath diisi kurva GAN bersyarat dengan aturan biologis.','6 akar primer · 43,4 m'],
+ c:['img/t_c.jpg','C. Final','Threshold dikalibrasi tanpa label dan bentuk akar dijaga.','178 → 133 simpul · 6 / 23 / 7 akar · 61,5 m · kedalaman rata-rata 0,41 m']};
+ function show(k){const[s,h,p,f]=TR[k];const im=$('#abcImg');if(HAS)gsap.fromTo(im,{opacity:.3,scale:.98},{opacity:1,scale:1,duration:.5,ease:'expo.out'});im.src=s;im.alt='Rekonstruksi Pohon 1, '+h;$('#abcH').textContent=h;$('#abcP').textContent=p;$('#abcF').textContent=f}
+ tabs($('#abcTabs'),[{key:'a',label:'A · BF-GCN'},{key:'b',label:'B · + Bio-cGAN'},{key:'c',label:'C · Final'}],'c',show);show('c')})();
+
+/* ===== sintetis & pohon ===== */
+function vsBars(el,rows){el.innerHTML=rows.map(r=>'<div class="brow"><div class="k">'+r.k+'</div><div class="twin"><div class="track"><div class="fill s" data-w="'+(r.s/r.max*100).toFixed(1)+'"></div></div><div class="track"><div class="fill u" data-w="'+(r.u/r.max*100).toFixed(1)+'"></div></div></div><div class="vv">'+r.fs+'<br><b style="color:var(--bark)">'+r.fu+'</b></div></div>').join('');grow(el)}
+vsBars($('#synBars'),[{k:'Topologi tepat<small>akurasi induk</small>',s:.312,u:.809,max:1,fs:'0,312',fu:'0,809'},{k:'Arah akar di r 0,8 m<small>F1 azimut</small>',s:.761,u:.828,max:1,fs:'0,761',fu:'0,828'},{k:'Selisih bentuk (m)<small>Chamfer, makin pendek makin baik</small>',s:.139,u:.102,max:.15,fs:'0,139',fu:'0,102'}]);
+const TREES=[
+ {n:1,id:'AG03',c1:[375,264,50,111],fin:[178,133,6,23,7,61.491,0.409,6],std:[9,51,20,122.954,0.397,9],gal:[3,7],img:'p1'},
+ {n:2,id:'AG01',c1:[324,220,52,104],fin:[157,112,8,18,6,58.830,0.396,8],std:[7,38,18,96.983,0.360,7],gal:[5,11]},
+ {n:3,id:'AG04',c1:[398,303,51,95],fin:[190,178,9,31,11,81.441,0.415,9],std:[10,51,30,134.736,0.440,9],gal:[7,9],img:'p3'},
+ {n:4,id:'AG05',c1:[256,180,31,76],fin:[104,93,6,20,2,47.378,0.367,5],std:[7,29,9,61.228,0.360,7],gal:[6,9]},
+ {n:5,id:'AG06',m:'mati',c1:[291,203,56,88],fin:[142,102,7,16,13,54.508,0.430,6],std:[9,47,21,114.148,0.456,6],gal:[11,20]},
+ {n:6,id:'AG07',c1:[262,173,52,89],fin:[143,106,5,19,5,47.469,0.397,5],std:[9,59,10,119.777,0.408,9]},
+ {n:7,id:'AG08',c1:[224,158,39,66],fin:[108,81,5,16,4,36.580,0.359,5],std:[7,34,10,69.220,0.364,7]},
+ {n:8,id:'AG09',c1:[246,167,57,79],fin:[115,76,7,21,1,47.271,0.458,4],std:[7,34,8,78.365,0.488,3]}];
+(function(){const box=$('#trees');
+ TREES.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML='P'+t.n+'<small>'+t.id+(t.m?' · '+t.m:'')+'</small>';b.setAttribute('aria-pressed',String(i===0));b.setAttribute('aria-label','Pohon '+t.n+' '+t.id);b.addEventListener('click',()=>{[...box.children].forEach(c=>c.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');show(i,true)});box.appendChild(b)});
+ function show(i,anim){const t=TREES[i],[a,tp,fp]=t.c1,f=t.fin,s=t.std;
+  $('#tstats').innerHTML='<div><b>'+tp+'<span style="display:inline;font-size:.5em;color:var(--ink-2)"> / '+a+'</span></b><span>akar berlabel yang ditemukan model</span></div><div><b>'+fmt(tp/(tp+fp),2)+'</b><span>ketepatan titik di pohon ini</span></div><div><b>'+f[0]+'→'+f[1]+'</b><span>simpul graf → lolos BF-GCN</span></div><div><b>'+(t.gal?t.gal[0]+' / '+t.gal[1]:'—')+'</b><span>'+(t.gal?'akar galian (pohon ini / semua)':'tidak ada data galian')+'</span></div>';
+  const mx=(x,y)=>Math.max(x,y)*1.08;
+  vsBars($('#treeBars'),[{k:'Akar primer',s:s[0],u:f[2],max:mx(s[0],f[2]),fs:s[0],fu:f[2]},{k:'Akar sekunder',s:s[1],u:f[3],max:mx(s[1],f[3]),fs:s[1],fu:f[3]},{k:'Akar tersier',s:s[2],u:f[4],max:mx(s[2],f[4]),fs:s[2],fu:f[4]},{k:'Panjang total (m)',s:s[3],u:f[5],max:mx(s[3],f[5]),fs:fmt(s[3],1),fu:fmt(f[5],1)},{k:'Akar di cincin r 0,8 m',s:s[5],u:f[7],max:mx(s[5],f[7]),fs:s[5],fu:f[7]}]);
+  $('#treeImgs').innerHTML=t.img?'<figure><div class="plate"><img src="img/'+t.img+'_multi.jpg" alt="Pohon '+t.n+': perspektif 3D, tampak atas, peta sumbu dan tampak samping" width="1400" height="946" loading="lazy"></div><figcaption>Hasil final: perspektif 3D, tampak atas dengan swath dan 36 titik galian, peta sumbu, tampak samping.</figcaption></figure><figure><div class="plate"><img src="img/'+t.img+'_enam.jpg" alt="Pohon '+t.n+' dari enam sudut" width="1400" height="873" loading="lazy"></div><figcaption>Enam sudut pandang (skala tegak diperbesar).</figcaption></figure>':'<p class="note" style="grid-column:1/-1">Gambar 3D lengkap tersedia untuk Pohon 1 dan Pohon 3. Usulan membuat lebih sedikit cabang pendek karena induk tiap simpul dipilih, bukan diambil dari jalur terpendek.</p>';
+  if(anim&&HAS)gsap.from('#tstats b',{y:16,opacity:0,duration:.6,ease:'expo.out',stagger:.05})}
+ show(0,false)})();
+
+/* ===== galian ===== */
+const GAL={1:{c:[7,26,27],l:[6,15,18,24]},2:{c:[2,14,15,21,22],l:[18,19,24,27,31,36]},3:{c:[1,9,10,14,29,33,34],l:[5,25]},4:{c:[3,4,11,12,20,28],l:[1,2,23]},5:{c:[3,4,5,8,14,15,17,18,29,34,36],l:[1,2,9,10,19,21,22,27,35]}};
+const REC={std:{1:[7,10,13,16,20,25,29,32,35],2:[4,8,12,15,21,24,32],3:[5,9,11,14,18,22,26,30,33],4:[2,5,8,12,22,32,35],5:[6,15,19,28,34,36]},usu:{1:[7,13,16,23,27,36],2:[2,7,11,14,17,21,24,30],3:[4,7,11,14,18,24,27,30,33],4:[5,8,12,31,35],5:[1,4,15,19,28,30]}};
+const G={tree:1,m:'usu',set:'c',tol:1};
+const dist=(p,q)=>Math.min(Math.abs(p-q),36-Math.abs(p-q));
+function match(P,T,tol){const m=new Map();function aug(p,seen){for(const q of T){if(dist(p,q)<=tol&&!seen.has(q)){seen.add(q);if(!m.has(q)||aug(m.get(q),seen)){m.set(q,p);return true}}}return false}P.forEach(p=>aug(p,new Set()));return m}
+const targets=t=>G.set==='c'?GAL[t].c.slice():GAL[t].c.concat(GAL[t].l);
+function counts(t,meth){const P=REC[meth][t],T=targets(t),m=match(P,T,G.tol);return{tp:m.size,fp:P.length-m.size,fn:T.length-m.size,m}}
+const f1=(a,b,c)=>{const p=a/Math.max(a+b,1),r=a/Math.max(a+c,1);return p+r?2*p*r/(p+r):0};
+function drawRing(anim){
+ const S=560,c=S/2,R=196,t=G.tree,g=GAL[t],P=REC[G.m][t],{tp,fp,fn,m}=counts(t,G.m),T=targets(t),mt=new Set(m.keys()),mp=new Set(m.values());
+ const pt=(k,r)=>{const a=(k-1)*10*Math.PI/180;return[c+r*Math.sin(a),c-r*Math.cos(a)]};
+ let s='<svg viewBox="-20 -20 '+(S+40)+' '+(S+40)+'" role="img" aria-label="Cincin galian pohon '+t+'">';
+ s+='<defs><radialGradient id="soil"><stop offset="0" stop-color="#3A2A1F"/><stop offset="1" stop-color="#1B140F"/></radialGradient></defs><circle cx="'+c+'" cy="'+c+'" r="'+(R+40)+'" fill="url(#soil)"/><circle cx="'+c+'" cy="'+c+'" r="'+R+'" fill="none" stroke="#47362A" stroke-width="2" stroke-dasharray="3 6"/>';
+ [['U',1],['T',10],['S',19],['B',28]].forEach(([l,k])=>{const[x,y]=pt(k,R+64);s+='<text x="'+x+'" y="'+(y+6)+'" text-anchor="middle" fill="#BFAE98" font-size="17">'+l+'</text>'});
+ P.forEach(k=>{const[x,y]=pt(k,R+30);const[x0,y0]=pt(k,44);s+='<line class="spoke" x1="'+x0+'" y1="'+y0+'" x2="'+x+'" y2="'+y+'" stroke="'+(mp.has(k)?'#EF8656':'#8A5A3A')+'" stroke-width="'+(mp.has(k)?8:6)+'" stroke-linecap="round"/>'});
+ s+='<circle cx="'+c+'" cy="'+c+'" r="44" fill="#5A3A26"/><circle cx="'+c+'" cy="'+c+'" r="44" fill="none" stroke="#7A5038" stroke-width="3"/>';
+ for(let k=1;k<=36;k++){const[x,y]=pt(k,R);const isC=g.c.includes(k),isL=g.l.includes(k),isT=T.includes(k);let fill='#211812',stroke='#47362A',tc='#BFAE98';
+  if(isC){fill='#F2E9DC';stroke='#F2E9DC';tc='#16100C'}else if(isL){if(G.set==='a'){fill='#9CC3BD';stroke='#9CC3BD';tc='#16100C'}else stroke='#9CC3BD'}
+  s+='<g class="dot"><circle cx="'+x+'" cy="'+y+'" r="13" fill="'+fill+'" stroke="'+stroke+'" stroke-width="2"/>';
+  if(isT&&!mt.has(k))s+='<circle cx="'+x+'" cy="'+y+'" r="19" fill="none" stroke="#E0705F" stroke-width="2.5" stroke-dasharray="4 4"/>';
+  if(isT&&mt.has(k))s+='<circle cx="'+x+'" cy="'+y+'" r="19" fill="none" stroke="#EF8656" stroke-width="3.5"/>';
+  s+='<text x="'+x+'" y="'+(y+4)+'" text-anchor="middle" font-size="11" fill="'+tc+'">'+k+'</text></g>'}
+ $('#ring').innerHTML=s+'</svg>';
+ if(anim&&HAS){gsap.from('#ring .spoke',{attr:{x2:c,y2:c},duration:.9,ease:'expo.out',stagger:.05});gsap.from('#ring .dot',{scale:.4,opacity:0,transformOrigin:'50% 50%',duration:.4,ease:'back.out(2)',stagger:.01})}
+ $('#score').innerHTML='<div><b>'+tp+'</b><span>akar galian ditemukan</span></div><div><b>'+fp+'</b><span>akar rekonstruksi tanpa pasangan</span></div><div><b>'+fn+'</b><span>akar galian terlewat</span></div>';
+ $('#ringText').textContent='Pohon '+t+' ('+['','AG03','AG01','AG04','AG05','AG06'][t]+'): '+T.length+' akar galian, '+P.length+' akar rekonstruksi. Garis oranye = akar rekonstruksi yang bertemu akar galian; cincin putus-putus = akar galian yang terlewat. Titik putih = akar pohon ini, biru-hijau = akar pohon lain. Toleransi '+(G.tol?'±1 titik (±10°).':'tepat di titik yang sama.');
+ let tb='';[['std','GCN–GAN standar'],['usu','Usulan (final)']].forEach(([k,lab])=>{let a=0,b=0,d=0;for(let q=1;q<=5;q++){const r=counts(q,k);a+=r.tp;b+=r.fp;d+=r.fn}tb+='<tr'+(k===G.m?' class="cur"':'')+'><td>'+lab+'</td><td class="n">'+a+'</td><td class="n">'+b+'</td><td class="n">'+d+'</td><td class="n">'+fmt(f1(a,b,d))+'</td></tr>'});$('#tot').innerHTML=tb}
+tabs($('#gTree'),[1,2,3,4,5].map(k=>({key:k,label:'P'+k+' · '+['','AG03','AG01','AG04','AG05','AG06'][k]})),1,k=>{G.tree=k;drawRing(true)});
+tabs($('#gMethod'),[{key:'usu',label:'Usulan'},{key:'std',label:'Standar'}],'usu',k=>{G.m=k;drawRing(true)});
+tabs($('#gSet'),[{key:'c',label:'Pohon ini'},{key:'a',label:'Semua akar'}],'c',k=>{G.set=k;drawRing(false)});
+tabs($('#gTol'),[{key:1,label:'±1 titik'},{key:0,label:'Tepat'}],1,k=>{G.tol=k;drawRing(false)});
+drawRing(false);
+if(HAS){const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();drawRing(true)}},{threshold:.35});io.observe($('#ring'))}
+
+/* tombol magnetik (desktop) */
+if(HAS&&matchMedia('(hover:hover)').matches)$$('.tabs button,.trees button').forEach(b=>{b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.18,y:(e.clientY-r.top-r.height/2)*.25,duration:.3,ease:'power3.out'})});b.addEventListener('pointerleave',()=>gsap.to(b,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'}))});
+
+addEventListener('load',()=>{if(HAS)ScrollTrigger.refresh()});
+})();
+</script>
+
+</body></html>
