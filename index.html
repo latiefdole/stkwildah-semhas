@@ -358,7 +358,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <div class="txt">
 <div class="kicker"><b>Seminar Hasil</b> · Program Doktor Ilmu Komputer · IPB University</div>
 <h1 id="heroH">Membaca akar tanpa <em>menggali.</em></h1>
-<p class="rtitle" id="heroT"><span class="kicker">Judul penelitian</span><span>Integrasi Deteksi Hiperbola Akar dan Arsitektur Akar 3D dari Radargram GPR melalui <i>Blended Feature Extraction</i> dan <span style="white-space:nowrap">BF-GCN – Bio-cGAN</span></span></p>
+<p class="rtitle" id="heroT"><span class="kicker">Judul penelitian</span><span>Integrasi Deteksi Hiperbola Akar dan Arsitektur Akar 3D dari Radargram GPR melalui <i>Blended Feature Extraction</i> dan <span style="white-space:nowrap">GCN-GAN</span></span></p>
 <p class="lede" id="heroP">Akar menahan pohon tetap berdiri, tetapi tersembunyi di bawah tanah. Penelitian ini memakai alat <i>ground penetrating radar</i> (GPR) dan <i>computer vision</i> untuk melihat akar pohon <i>Agathis</i> dalam tiga dimensi, tanpa merusaknya.</p>
 <div class="chips" id="heroC"><span>8 pohon Agathis</span><span>Hutan Pendidikan Gunung Walat</span><span>850 radargram</span><span>2.376 akar berlabel</span></div>
 <div class="cue"><i></i>Gulir pelan untuk mulai</div>
@@ -490,7 +490,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 </div>
 <div class="solc rv" data-tilt>
 <span class="n">2</span><h3>Menyambung titik jadi akar</h3>
-<p class="dim">Model graf <b>BF-GCN</b> memutuskan titik mana yang satu akar dan ke mana induknya, lalu <b>Bio-cGAN</b> mengisi bagian yang tidak terlihat radar.</p>
+<p class="dim">Model graf <b>GCN</b> memutuskan titik mana yang satu akar dan ke mana induknya, lalu <b>GAN</b> mengisi bagian yang tidak terlihat radar.</p>
 <div class="mini"><svg viewBox="0 0 400 150" aria-hidden="true"><rect width="400" height="150" fill="#2C2119"/><rect x="192" y="0" width="16" height="40" fill="#9A6A4A"/><g class="lnk" fill="none" stroke="#C98B5E" stroke-width="5" stroke-linecap="round"><path pathLength="1" d="M200 40 C 160 52 110 70 40 110"/><path pathLength="1" d="M200 40 C 240 54 300 66 360 104"/><path pathLength="1" d="M200 42 C 196 80 210 110 200 140"/></g><g fill="#F2E9DC"><circle cx="120" cy="66" r="5"/><circle cx="70" cy="94" r="5"/><circle cx="280" cy="62" r="5"/><circle cx="335" cy="90" r="5"/><circle cx="203" cy="96" r="5"/><circle cx="200" cy="128" r="5"/></g></svg></div>
 </div>
 </div>
@@ -847,9 +847,9 @@ const STEPS3=[
  {k:'Apex → koordinat',h:'Setiap puncak punya alamat 3D.',p:'Posisi lintasan di sekitar pohon diketahui, sehingga setiap puncak diberi koordinat X, Y, dan kedalaman Z dalam meter.'},
  {k:'Sparse point cloud',h:'Titik dari semua lintasan.',p:'Puncak dari ratusan radargram dikumpulkan menjadi awan titik yang jarang di sekitar batang. Sebagian adalah pantulan palsu dari batu atau air.'},
  {k:'Merging',h:'Titik yang berdekatan digabung.',p:'Titik kembar dari lintasan yang bersebelahan digabung menjadi satu simpul, lalu setiap simpul dihubungkan dengan tetangga terdekatnya menjadi graf.'},
- {k:'BF-GCN',h:'Titik palsu disaring.',p:'GCN menilai setiap simpul bersama tetangganya. Simpul yang tidak cocok dengan pola akar dibuang.'},
- {k:'BF-GCN',h:'Simpul tersambung menjadi akar.',p:'Setiap simpul memilih satu induk yang lebih dekat ke batang, lalu urutan simpul dihaluskan menjadi kurva akar.'},
- {k:'Bio-cGAN',h:'Celah dekat batang diisi.',p:'Radar tidak bisa memindai tepat di samping batang. Bagian itu diisi kurva dari GAN bersyarat yang mengikuti aturan tumbuh akar.'}];
+ {k:'GCN',h:'Titik palsu disaring.',p:'GCN menilai setiap simpul bersama tetangganya. Simpul yang tidak cocok dengan pola akar dibuang.'},
+ {k:'GCN',h:'Simpul tersambung menjadi akar.',p:'Setiap simpul memilih satu induk yang lebih dekat ke batang, lalu urutan simpul dihaluskan menjadi kurva akar.'},
+ {k:'GAN',h:'Celah dekat batang diisi.',p:'Radar tidak bisa memindai tepat di samping batang. Bagian itu diisi kurva dari GAN bersyarat yang mengikuti aturan tumbuh akar.'}];
 let setStep3=()=>{};
 (function(){
  const N=STEPS3.length,prog=$('#prog');prog.innerHTML=STEPS3.map(()=>'<i><b></b></i>').join('');const bars=$$('b',prog);
@@ -965,14 +965,14 @@ let setStep3=()=>{};
   const raw=(rv>0?1:0)*(1-.85*seg01(u[5],.45,.7));cTrue.material.opacity=raw;cFalse.material.opacity=raw;
   const no=seg01(u[5],.4,.65);
   gEdges.material.opacity=.5*seg01(u[5],.6,.9)*(1-seg01(u[6],.55,.9));
-  // 6 · BF-GCN menyaring simpul palsu
+  // 6 · GCN menyaring simpul palsu
   const k6=seg01(u[6],.1,.4);cNF.material.color.setRGB(lerp(warm.r,red.r,k6),lerp(warm.g,red.g,k6),lerp(warm.b,red.b,k6));
   cNF.material.opacity=no*(1-seg01(u[6],.45,.85));cNF.material.size=.18*(1-.6*seg01(u[6],.45,.85));
   // 7 · induk berarah + kurva akar
   pEdges.material.opacity=.95*seg01(u[7],0,.3)*(1-.75*seg01(u[7],.75,1));
   const tp=seg01(u[7],.3,.85);tubes.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*tp/3)*3)});
   cNT.material.opacity=no*(1-.7*seg01(u[7],.6,.95));
-  // 8 · Bio-cGAN
+  // 8 · GAN
   const gp=seg01(u[8],.1,.65);gaps.forEach(m=>{const n=m.geometry.index.count;m.geometry.setDrawRange(0,Math.floor(n*gp/3)*3);m.material.emissiveIntensity=.9-.6*seg01(u[8],.75,1)});
   ringM.opacity=.8*seg01(u[8],.55,.9)}
  function render(){requestAnimationFrame(render);if(!visible)return;if(HAS)idle+=.0016;apply(prog);
@@ -985,9 +985,9 @@ let setStep3=()=>{};
 })();
 
 /* ---------- A/B/C hasil asli ---------- */
-(function(){const TR={a:['img/t_a.jpg','A. BF-GCN'],b:['img/t_b.jpg','B. + Bio-cGAN'],c:['img/t_c.jpg','C. Final']};
+(function(){const TR={a:['img/t_a.jpg','A. GCN'],b:['img/t_b.jpg','B. GAN'],c:['img/t_c.jpg','C. GCN-GAN termodifikasi']};
  function show(k){const[s,h]=TR[k];const im=$('#abcImg');if(HAS)gsap.fromTo(im,{opacity:.3,scale:.98},{opacity:1,scale:1,duration:.5,ease:'expo.out'});im.src=s;im.alt='Rekonstruksi pohon Agathis ke-1, '+h;$('#abcH').textContent=h}
- tabs($('#abcTabs'),[{key:'a',label:'A · BF-GCN'},{key:'b',label:'B · + Bio-cGAN'},{key:'c',label:'C · Final'}],'c',show);show('c')})();
+ tabs($('#abcTabs'),[{key:'a',label:'A · GCN'},{key:'b',label:'B · GAN'},{key:'c',label:'C · GCN-GAN termodifikasi'}],'c',show);show('c')})();
 
 /* ===== sintetis & pohon ===== */
 const TREES=[
@@ -1002,7 +1002,7 @@ const TREES=[
 (function(){const box=$('#trees');
  TREES.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML='P'+t.n+'<small>'+t.id+(t.m?' · '+t.m:'')+'</small>';b.setAttribute('aria-pressed',String(i===0));b.setAttribute('aria-label','Pohon '+t.n+' '+t.id);b.addEventListener('click',()=>{[...box.children].forEach(c=>c.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');show(i,true)});box.appendChild(b)});
  function show(i,anim){const t=TREES[i],[a,tp,fp]=t.c1,f=t.fin;
-  $('#tstats').innerHTML='<div><b>±'+Math.round(tp/a*100)+'%</b><span>akar berlabel yang ditemukan model</span></div><div><b>±'+Math.round(tp/(tp+fp)*100)+'%</b><span>ketepatan titik di pohon ini</span></div><div><b>'+f[0]+'→'+f[1]+'</b><span>simpul graf → lolos BF-GCN</span></div><div><b>'+(t.gal?t.gal[0]+' / '+t.gal[1]:'—')+'</b><span>'+(t.gal?'akar galian (pohon ini / semua)':'tidak ada data galian')+'</span></div>';
+  $('#tstats').innerHTML='<div><b>±'+Math.round(tp/a*100)+'%</b><span>akar berlabel yang ditemukan model</span></div><div><b>±'+Math.round(tp/(tp+fp)*100)+'%</b><span>ketepatan titik di pohon ini</span></div><div><b>'+f[0]+'→'+f[1]+'</b><span>simpul graf → lolos GCN</span></div><div><b>'+(t.gal?t.gal[0]+' / '+t.gal[1]:'—')+'</b><span>'+(t.gal?'akar galian (pohon ini / semua)':'tidak ada data galian')+'</span></div>';
   const mx=i=>Math.max(...TREES.map(q=>q.fin[i]))*1.08,row=(k,i,txt)=>'<div class="brow hl"><div class="k">'+k+'</div><div class="track"><div class="fill" data-w="'+(f[i]/mx(i)*100).toFixed(1)+'"></div></div><div class="v">'+txt+'</div></div>';
   $('#treeBars').innerHTML=row('Akar primer',2,f[2])+row('Akar sekunder',3,f[3])+row('Akar tersier',4,f[4])+row('Panjang total (m)',5,fmt(f[5],1))+row('Akar di cincin r 0,8 m',7,f[7]);grow($('#treeBars'));
   $('#treeImgs').innerHTML=t.img?'<figure><div class="plate"><img src="img/'+t.img+'_multi.jpg" alt="Pohon '+t.n+': perspektif 3D, tampak atas, peta sumbu dan tampak samping" width="1400" height="946" loading="lazy"></div><figcaption>Hasil final: perspektif 3D, tampak atas dengan swath dan 36 titik galian, peta sumbu, tampak samping.</figcaption></figure><figure><div class="plate"><img src="img/'+t.img+'_enam.jpg" alt="Pohon '+t.n+' dari enam sudut" width="1400" height="873" loading="lazy"></div><figcaption>Enam sudut pandang (skala tegak diperbesar).</figcaption></figure>':'<p class="note" style="grid-column:1/-1">Gambar 3D lengkap tersedia untuk Pohon 1 dan Pohon 3.</p>';
