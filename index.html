@@ -124,6 +124,7 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .rg svg,.rg canvas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
 .rg .ghost{position:absolute;inset:0;border-radius:8px;overflow:hidden;opacity:0;box-shadow:0 14px 30px -18px rgba(0,0,0,.8)}
 .rg .ghost img{filter:grayscale(1) contrast(.9)}
+.rg .rg-badge{position:absolute;left:3%;bottom:3%;max-width:80%;font-family:var(--f-mono);font-size:11.5px;letter-spacing:.03em;line-height:1.35;background:rgba(14,10,8,.85);color:var(--ink);border:1px dashed var(--bark);padding:5px 9px;border-radius:6px}
 .rg .count{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-family:var(--f-display);font-weight:800;font-variation-settings:"wdth" 75,"opsz" 96;font-size:clamp(80px,12vw,170px);color:var(--bark);opacity:0;text-shadow:0 4px 24px rgba(0,0,0,.6);line-height:.8;text-align:center}
 .rg .count small{display:block;font-family:var(--f-mono);font-size:14px;font-weight:600;letter-spacing:.08em;color:var(--ink);text-transform:uppercase;margin-top:10px}
 .rg .scan{position:absolute;top:2%;bottom:2%;width:3px;left:0;background:var(--bark);box-shadow:0 0 16px 3px rgba(194,85,43,.55);opacity:0;border-radius:2px}
@@ -257,13 +258,14 @@ figure figcaption{font-size:13.5px;color:var(--ink-2);margin-top:8px}
 .glegend{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 18px;margin:18px auto 0;max-width:560px;font-size:13.5px;line-height:1.3;color:var(--ink-2)}
 .glegend span{display:flex;gap:10px;align-items:center}.glegend svg{flex:none;width:34px;height:24px}
 .glegend .gh{grid-column:1/-1;font-family:var(--f-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-2);margin-top:4px}
-@media (max-width:560px){.glegend{grid-template-columns:1fr}#galian table{font-size:13px}#galian th{font-size:9.5px;letter-spacing:.03em;padding-inline:4px}#galian td{padding-inline:4px}#galian td:first-child{white-space:nowrap}}
+@media (max-width:560px){.glegend{grid-template-columns:1fr}#galian table{font-size:13px}#galian th{font-size:9.5px;letter-spacing:.03em;padding-inline:4px}#galian td{padding-inline:4px}#galian td:first-child{white-space:nowrap}#galian tr.cur td{color:var(--forest)}}
 .score span{font-size:12.5px;color:var(--ink-2)}
 table{border-collapse:collapse;width:100%;font-size:14.5px}
 th,td{padding:9px 8px;border-bottom:1px solid var(--line);text-align:left}
 th{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:400}
 td.n,th.n{text-align:right;font-family:var(--f-mono)}
 tr.cur td{color:var(--bark);font-weight:600}
+.disclaimer{font-size:13.5px!important;color:var(--ink-2);font-style:italic;margin-top:-4px}
 .callout{border-left:4px solid var(--bark);background:var(--card);padding:16px 20px;border-radius:0 12px 12px 0;font-size:16px;max-width:70ch}
 
 /* temuan */
@@ -458,7 +460,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <div class="frame">
 <div class="caps">
 <div class="cap"><span class="k">02 · Kenyataannya</span><h2>Radargram asli tidak serapi itu.</h2><p>Inilah salah satu radargram dari pohon Agathis ke-1 (AG03). Bisakah Anda menemukan akarnya?</p></div>
-<div class="cap"><span class="k">02 · Kenyataannya</span><h2>Samar, terputus, penuh noise.</h2><p>Pantulan akar bercampur dengan batu, air, dan lapisan tanah. Hiperbola yang ada tidak utuh dan mudah tertukar.</p><p class="fact">Kotak putus-putus: lima hiperbola akar yang dilabel ahli pada radargram ini.</p></div>
+<div class="cap"><span class="k">02 · Kenyataannya</span><h2>Samar, terputus, penuh noise.</h2><p>Pantulan akar bercampur dengan batu, air, dan lapisan tanah. Hiperbola yang ada tidak utuh dan mudah tertukar.</p><p class="fact">Kotak putus-putus (ilustrasi): perkiraan letak lima hiperbola akar yang dilabel ahli pada radargram ini.</p></div>
 <div class="cap"><span class="k">02 · Kenyataannya</span><h2>Dan jumlahnya ratusan.</h2><p>Setiap pohon dipindai puluhan lintasan. Untuk delapan pohon, terkumpul 850 radargram berisi 2.376 akar berlabel.</p></div>
 <div class="cap"><span class="k">02 · Kenyataannya</span><h2>Pembacaan radargram memerlukan ketelitian dan keahlian.</h2><p>Ahli memerlukan ketelitian dan waktu relatif lama untuk menandai satu per satu radargram.</p></div>
 </div>
@@ -468,6 +470,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <img class="main" src="img/radargram_bersih.jpg" alt="Radargram asli lintasan pohon Agathis ke-1 (AG03)" width="1035" height="1150" style="position:relative;z-index:1">
 <canvas id="noise" style="z-index:2;opacity:0;mix-blend-mode:multiply"></canvas>
 <svg viewBox="0 0 1035 1150" style="z-index:3" aria-hidden="true"><g class="hb" id="hbBoxes" opacity="0"></g></svg>
+<span class="rg-badge" id="hbBadge" style="z-index:4;opacity:0">Ilustrasi · kotak diperkirakan dari titik label ahli</span>
 <div class="count" id="count850" style="z-index:4">850<small>radargram · 8 pohon</small></div>
 </div>
 </div>
@@ -498,12 +501,14 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <div class="frame">
 <div class="caps">
 <div class="cap"><span class="k">03 · Langkah 1</span><h2>Computer vision memindai radargram…</h2><p>Model melihat seluruh gambar sekaligus dan mencari pola lengkung pantulan akar.</p></div>
-<div class="cap"><span class="k">03 · Langkah 1</span><h2>…dan menunjuk puncak tiap hiperbola.</h2><p>Puncak (apex) adalah titik tempat akar memotong lintasan radar. Di sinilah akar benar-benar berada.</p><p class="fact">Data uji: precision 0,803 · recall 0,825 · AP titik @0,30 m 0,903.</p></div>
+<div class="cap"><span class="k">03 · Langkah 1</span><h2>…dan menunjuk puncak tiap hiperbola.</h2><p>Puncak (apex) adalah titik tempat akar memotong lintasan radar. Di sinilah akar benar-benar berada.</p><p class="fact">Diuji pada radargram yang tidak pernah dilihat model.</p></div>
 <div class="cap"><span class="k">03 · Langkah 1</span><h2>Setiap titik menjadi koordinat.</h2><p>Posisi pada lintasan dan kedalaman diubah ke meter, dengan pusat batang sebagai titik nol. Dari 850 radargram terkumpul ribuan titik akar.</p></div>
 </div>
 <div class="stage">
 <div class="rg" id="rgAI">
-<img src="img/radargram_bersih.jpg" alt="Radargram AG03 dengan titik puncak hiperbola" width="1035" height="1150">
+<img src="img/radargram_bersih.jpg" alt="" width="1035" height="1150">
+<img class="lab" src="img/radargram_label_ahli.jpg" alt="Radargram AG03 dengan lima titik puncak hiperbola yang ditandai ahli (lingkaran merah)" width="1035" height="1150" style="position:absolute;inset:0">
+<span class="rg-badge" style="z-index:3">Lingkaran merah: titik puncak berlabel ahli</span>
 <svg viewBox="0 0 1035 1150" aria-hidden="true"><g class="apx" id="apxAI"></g></svg>
 <div class="scan" id="scanAI"></div>
 <div class="xyz" id="xyzAI"><span><b>X</b> barat → timur (m)</span><span><b>Y</b> selatan → utara (m)</span><span><b>Z</b> kedalaman (m)</span><span class="dim">pusat batang = (0, 0)</span></div>
@@ -511,15 +516,15 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 </div>
 </div>
 <div class="steps" aria-hidden="true"></div>
-<div class="tag">Data: radargram AG03 · titik puncak berlabel</div>
+<div class="tag">Data: radargram AG03 · titik puncak berlabel ahli</div>
 </section>
 
 <!-- ================= HASIL DETEKSI ================= -->
 <section class="ch alt" id="hasil"><div class="in">
 <div class="ch-head rv"><span class="kicker"><b>03 · Hasil langkah 1</b></span><h2>Seberapa jitu computer vision menemukan akar?</h2><p>Diuji pada 80 radargram yang tidak pernah dilihat model. Titik dihitung benar bila jaraknya ke akar sebenarnya tidak lebih dari 20 cm.</p></div>
 <div class="waf rv">
-<div class="wf"><div class="big" id="wfP">80,3<small>/ 100</small></div><div class="grid100" id="gridP" aria-hidden="true"></div><p><b>Dari setiap 100 titik yang ditunjuk model, sekitar 80 memang akar.</b> <span class="dim">(precision 0,803)</span></p></div>
-<div class="wf"><div class="big" id="wfR" style="color:var(--bark)">82,5<small>/ 100</small></div><div class="grid100 rec" id="gridR" aria-hidden="true"></div><p><b>Dari setiap 100 akar yang ada, sekitar 82 berhasil ditemukan.</b> <span class="dim">(recall 0,825)</span></p></div>
+<div class="wf"><div class="big" id="wfP">80<small>/ 100</small></div><div class="grid100" id="gridP" aria-hidden="true"></div><p><b>Dari setiap 100 titik yang ditunjuk model, sekitar 80 memang akar.</b></p></div>
+<div class="wf"><div class="big" id="wfR" style="color:var(--bark)">82<small>/ 100</small></div><div class="grid100 rec" id="gridR" aria-hidden="true"></div><p><b>Dari setiap 100 akar yang ada, sekitar 82 berhasil ditemukan.</b></p></div>
 </div>
 </div></section>
 
@@ -527,7 +532,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <section class="pin" id="akar3d" aria-label="Alur lengkap: dari pemindaian GPR sampai akar 3D">
 <canvas id="gl" aria-hidden="true"></canvas>
 <div class="bscan photo" id="fcard"><div class="bs-in"><video src="img/akuisisi.mp4" poster="img/akuisisi_poster.jpg" width="960" height="540" muted loop playsinline preload="metadata" aria-label="Animasi ilustrasi akuisisi data GPR di hutan"></video></div><span class="bs-lab">Akuisisi · ilustrasi</span></div>
-<div class="bscan" id="bscan"><div class="bs-in"><img src="img/radargram_bersih.jpg" alt="Citra B-scan pohon Agathis ke-1 (AG03) dengan lima titik puncak hiperbola" width="1035" height="1150"><svg viewBox="0 0 1035 1150" aria-hidden="true"><g class="apx" id="apxB"></g></svg></div><span class="bs-lab">B-scan · AG03</span></div>
+<div class="bscan" id="bscan"><div class="bs-in"><img src="img/radargram_bersih.jpg" alt="Citra B-scan pohon Agathis ke-1 (AG03)" width="1035" height="1150"><img class="lab" src="img/radargram_label_ahli.jpg" alt="Citra B-scan AG03 dengan lima titik puncak berlabel ahli" width="1035" height="1150" style="position:absolute;inset:0;opacity:0"><svg viewBox="0 0 1035 1150" aria-hidden="true"><g class="apx" id="apxB"></g></svg></div><span class="bs-lab">B-scan · AG03</span></div>
 <div class="pin-title"><span class="kicker"><b>05 · Alur lengkap</b></span><h2>Dari pemindaian<br>ke akar 3D</h2></div>
 <div class="compass">U ↑ · skala tegak ×2</div>
 <div class="story" aria-live="polite"><div class="prog" id="prog"></div><div class="kicker" id="sK"></div><h3 id="sH"></h3><p id="sP"></p></div>
@@ -542,8 +547,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <div style="display:flex;flex-direction:column;gap:14px"><div class="kicker"><b>Hasil asli</b> · Pohon Agathis ke-1 (AG03)</div><div class="tabs" id="abcTabs" role="group" aria-label="Tahap"></div><h4 id="abcH"></h4></div>
 </div></div>
 <div class="grid2">
-<div class="card wide rv"><h3>Uji pada 60 pohon sintetis</h3><p class="note">Diuji pada 60 pohon sintetis yang bentuk akarnya sudah diketahui.</p>
-<div class="tstats" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div><b>0,809</b><span>akurasi topologi (induk tiap simpul tepat)</span></div><div><b>0,828</b><span>F1 arah akar di cincin r 0,8 m</span></div><div><b>0,102 m</b><span>selisih bentuk (Chamfer), makin kecil makin baik</span></div></div></div>
+<div class="card wide rv"><p>Diuji pada 60 pohon sintetis yang bentuk akarnya sudah diketahui, dengan sebagian besar simpul tersambung ke induk yang benar.</p></div>
 <div class="card wide rv" id="treeCard">
 <div style="display:flex;flex-wrap:wrap;justify-content:space-between;gap:12px;align-items:end"><h3>Jelajahi delapan pohon</h3><span class="kicker">data lapangan per pohon</span></div>
 <div class="trees" id="trees" role="group" aria-label="Pilih pohon"></div>
@@ -556,14 +560,14 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 
 <!-- ================= GALIAN ================= -->
 <section class="ch" id="galian"><div class="in">
-<div class="ch-head rv"><span class="kicker"><b>05 · Bukti lapangan</b></span><h2>Dicocokkan dengan galian.</h2><p>Pada lima pohon, akar pernah digali di cincin 0,8 m dari batang (Taufiqurahman, 2025). Lingkaran di bawah adalah cincin galian itu dilihat dari atas: 36 titik searah jarum jam, titik 1 di utara. Pilih pohon untuk membandingkan akar hasil model dengan akar hasil galian.</p></div>
+<div class="ch-head rv"><span class="kicker"><b>05 · Bukti lapangan</b></span><h2>Dicocokkan dengan galian.</h2><p>Pada lima pohon, akar pernah digali di cincin 0,8 m dari batang (Taufiqurrachman, 2025). Lingkaran di bawah adalah cincin galian itu dilihat dari atas: 36 titik searah jarum jam, titik 1 di utara. Pilih pohon untuk membandingkan akar hasil model dengan akar hasil galian.</p></div>
 <div class="gal">
 <div class="ringbox"><div class="ring" id="ring"></div><div class="glegend" id="gLegend"></div></div>
 <div class="ctrls">
 <div class="ctrl"><span class="kicker">Pilih pohon</span><div class="tabs" id="gTree"></div></div>
 <p class="gsum" id="gSum"></p>
 <div class="score" id="score"></div>
-<table><thead><tr><th>Total 5 pohon</th><th class="n">Ditemukan</th><th class="n">Terlewat</th><th class="n">Tanpa pasangan</th><th class="n">F1</th></tr></thead><tbody id="tot"></tbody></table>
+<table><thead><tr><th></th><th class="n">Ditemukan</th><th class="n">Terlewat</th><th class="n">Tanpa pasangan</th></tr></thead><tbody id="tot"></tbody></table>
 <p class="hint">Dibandingkan dengan akar galian milik pohon ini. Akar model dianggap cocok bila jatuh di titik yang sama atau satu titik di sebelahnya (±10°); garis titik-titik hijau menunjukkan pasangan yang bergeser.</p>
 </div>
 </div>
@@ -571,7 +575,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 
 <!-- ================= TEMUAN ================= -->
 <section class="ch alt" id="temuan"><div class="in">
-<div class="ch-head rv"><span class="kicker"><b>06 · Temuan</b></span><h2>Yang kami pelajari.</h2></div>
+<div class="ch-head rv"><span class="kicker"><b>06 · Temuan</b></span><h2>Yang kami pelajari.</h2><p class="disclaimer">Hasil sementara; dataset delapan pohon masih dalam proses validasi.</p></div>
 <div class="finds">
 <div class="find rv"><b>80%<small>titik yang ditunjuk model memang akar</small></b><div><h3>Computer vision menemukan akar sebagai titik, dalam meter.</h3><p>Dari setiap 100 titik yang ditunjuk model, sekitar 80 memang akar, dan sekitar 82 dari setiap 100 akar yang ada berhasil ditemukan. Hasil serupa terlihat pada seluruh 850 radargram dari delapan pohon.</p></div></div>
 <div class="find rv"><b>81%<small>simpul tersambung ke induk yang benar</small></b><div><h3>Titik-titik tersambung menjadi akar yang utuh.</h3><p>Pada 60 pohon uji yang bentuk akarnya sudah diketahui, sekitar 8 dari 10 simpul tersambung ke induk yang benar, sehingga setiap cabang tahu asalnya.</p></div></div>
@@ -595,7 +599,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <div><span class="kicker">Terima kasih</span><ul class="flist">
 <li>Hutan Pendidikan Gunung Walat (HPGW) IPB</li>
 <li>PT Exact Global Teknologi <small>Data GPR</small></li>
-<li>M. Taufiqurahman <small>Data penggalian</small></li>
+<li>Mochammad Taufiqurrachman <small>Data penggalian</small></li>
 <li>Beasiswa Pendidikan Indonesia (BPI)</li>
 </ul></div>
 </div>
@@ -605,7 +609,7 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <span>Goodfellow I, et al. 2014. Generative adversarial nets. NeurIPS.</span>
 <span>Lu G, Lu Y. 2022. 3D modeling beneath ground: plant root detection and reconstruction based on ground-penetrating radar. WACV.</span>
 <span>Zhou Y, Lu G. 2026. Underground plant exploration: non-destructive 3D root assessment with GPR based on point graph neural network. CVPR.</span>
-<span>Taufiqurahman M. 2025. Validasi distribusi radial akar pohon Agathis yang diuji menggunakan alat nondestruktif root detector [tesis]. IPB University.</span></div>
+<span>Taufiqurrachman M. 2025. Validasi Distribusi Radial Akar Pohon Agathis (<i>Agathis loranthifolia</i> Salisb.) yang Diuji Menggunakan Alat Nondestruktif Root Detector [tesis]. Bogor: IPB University.</span></div>
 </div></footer>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
@@ -700,7 +704,7 @@ let CB1='500 170';
 })();
 
 /* ---------- hero ---------- */
-(function(){const items=[['0,803','precision'],['0,825','recall'],['0,903','AP titik @0,30 m'],['0,809','akurasi topologi'],['2.376','akar berlabel'],['850','radargram'],['8','pohon Agathis']];
+(function(){const items=[['±80%','titik yang ditunjuk memang akar'],['±82%','akar berhasil ditemukan'],['±81%','simpul tersambung benar'],['2.376','akar berlabel'],['850','radargram'],['8','pohon Agathis']];
  const one=items.map(([b,s])=>'<span class="it"><b>'+b+'</b><span>'+s+'</span></span><span class="sep">✻</span>').join('');$('#ticker').innerHTML=one+one;})();
 (function leaves(){const g=$('#leaves');if(!g)return;const R=rng(3);let h='';for(let i=0;i<7;i++){const x=130+R()*260,y=120+R()*150;h+='<path class="lf" d="M0 0C7 -6 17 -6 23 0C17 6 7 6 0 0Z" fill="'+(['#3E6B3A','#A0703F','#2F5A30','#8A5A33'][i%4])+'" transform="translate('+x.toFixed(0)+' '+y.toFixed(0)+')"/>'}g.innerHTML=h;
  if(!HAS)return;$$('.lf',g).forEach((lf,i)=>{const tl=gsap.timeline({repeat:-1,delay:i*1.3});tl.fromTo(lf,{opacity:0},{opacity:1,duration:.4}).to(lf,{x:'+='+(R()*120-40),y:'+='+(300+R()*120),rotation:360*(R()<.5?-1:1),duration:6+R()*3,ease:'sine.inOut'},0).to(lf,{opacity:0,duration:.6},'-=.8')})})();
@@ -791,13 +795,13 @@ const AP=[[661,418],[898,448],[481,517],[337,601],[865,646]];
  function drawNoise(t){if(on&&t-last>90){last=t;const d=c.createImageData(260,290);for(let i=0;i<d.data.length;i+=4){const v=Math.random()*255;d.data[i]=v;d.data[i+1]=v;d.data[i+2]=v;d.data[i+3]=255}c.putImageData(d,0,0)}requestAnimationFrame(drawNoise)}requestAnimationFrame(drawNoise);
  const gh=$$('#rgProblem .ghost');const fan=[[-20,-14,-6],[18,-12,5],[-12,14,-3],[22,16,7],[-26,4,-8],[26,-2,9]];
  scene('masalah',tl=>{
-  tl.to('#noise',{opacity:.38,duration:.4,onStart:()=>on=true,onReverseComplete:()=>on=false},1.0).to('#hbBoxes',{opacity:1,duration:.3},1.2).fromTo('#hbBoxes rect',{scale:.6,transformOrigin:'50% 50%'},{scale:1,duration:.4,stagger:.05,ease:'back.out(2)'},1.2)
-    .to('#hbBoxes',{opacity:0,duration:.25},1.95).to('#noise',{opacity:0,duration:.25},1.95)
+  tl.to('#noise',{opacity:.38,duration:.4,onStart:()=>on=true,onReverseComplete:()=>on=false},1.0).to(['#hbBoxes','#hbBadge'],{opacity:1,duration:.3},1.2).fromTo('#hbBoxes rect',{scale:.6,transformOrigin:'50% 50%'},{scale:1,duration:.4,stagger:.05,ease:'back.out(2)'},1.2)
+    .to(['#hbBoxes','#hbBadge'],{opacity:0,duration:.25},1.95).to('#noise',{opacity:0,duration:.25},1.95)
     .to('#rgProblem .main',{scale:.62,duration:.5,ease:'power2.inOut'},2.0);
   gh.forEach((g,i)=>{const[x,y,r]=fan[i];tl.to(g,{opacity:1,xPercent:x,yPercent:y,rotation:r,scale:.62,duration:.5,ease:'power2.out'},2.05+i*.03)});
   tl.fromTo('#count850',{opacity:0,scale:.6},{opacity:1,scale:1,duration:.45,ease:'back.out(1.8)'},2.35)
     .to('#count850',{opacity:0,duration:.25},3.0).to(gh,{opacity:.35,duration:.3},3.0).to('#rgProblem .main',{filter:'grayscale(1) blur(1px)',duration:.4},3.05);
- },{staticState:()=>{$('#hbBoxes').style.opacity=1}});
+ },{staticState:()=>{$('#hbBoxes').style.opacity=1;$('#hbBadge').style.opacity=1}});
 })();
 
 /* ===== pernyataan: kata menyala saat digulir ===== */
@@ -811,11 +815,12 @@ const AP=[[661,418],[898,448],[481,517],[337,601],[865,646]];
 
 /* ===== ADEGAN 4: computer vision membaca ===== */
 (function(){
- $('#apxAI').innerHTML=AP.map(([x,y],i)=>'<g class="a"><circle class="p" cx="'+x+'" cy="'+y+'" r="28" style="animation-delay:'+(i*.3)+'s"/><circle class="c" cx="'+x+'" cy="'+y+'" r="28"/><text x="'+(x+36)+'" y="'+(y-30)+'">'+(i+1)+'</text></g>').join('');
+ $('#apxAI').innerHTML=AP.map(([x,y],i)=>'<g class="a"><circle class="p" cx="'+x+'" cy="'+y+'" r="28" style="animation-delay:'+(i*.3)+'s"/><text x="'+(x+36)+'" y="'+(y-30)+'">'+(i+1)+'</text></g>').join('');
  const rg=$('#rgAI');const io=new IntersectionObserver(e=>rg.classList.toggle('pulse',e[0].isIntersecting));io.observe(rg);
  const order=AP.map((p,i)=>[p[0],i]).sort((a,b)=>a[0]-b[0]);
  scene('ai',tl=>{
-  tl.set('#scanAI',{left:'0%',opacity:1},0).to('#scanAI',{left:'100%',duration:1.6,ease:'none'},.05).to('#scanAI',{opacity:0,duration:.2},1.65);
+  tl.set('#scanAI',{left:'0%',opacity:1},0).to('#scanAI',{left:'100%',duration:1.6,ease:'none'},.05).to('#scanAI',{opacity:0,duration:.2},1.65)
+    .fromTo('#rgAI .lab',{clipPath:'inset(0% 100% 0% 0%)'},{clipPath:'inset(0% 0% 0% 0%)',duration:1.6,ease:'none'},.05);
   order.forEach(([x,i])=>{const g=$$('#apxAI .a')[i];const t=.05+x/1035*1.6;tl.fromTo(g,{opacity:0,scale:.3,transformOrigin:'50% 50%'},{opacity:1,scale:1,transformOrigin:'50% 50%',duration:.25,ease:'back.out(3)',immediateRender:true},t)});
   tl.fromTo('#xyzAI',{opacity:0,y:20},{opacity:1,y:0,duration:.35,ease:'expo.out'},2.1);
  },{staticState:()=>{$('#xyzAI').style.opacity=1}});
@@ -824,8 +829,8 @@ const AP=[[661,418],[898,448],[481,517],[337,601],[865,646]];
 /* ===== hasil: waffle ===== */
 function waffle(el,val){let h='';for(let i=0;i<100;i++){const full=i+1<=val,part=!full&&i<val;h+='<i class="'+(full?'on':part?'part':'')+'"'+(part?' style="--cut:'+((1-(val-i))*100).toFixed(0)+'%"':'')+'></i>'}el.innerHTML=h;
  if(!HAS)return;const dots=$$('i',el);gsap.from(dots,{scale:.2,opacity:.25,duration:.5,ease:'back.out(2)',stagger:{each:.008,from:'start'},scrollTrigger:{trigger:el,start:'top 80%'}})}
-waffle($('#gridP'),80.3);waffle($('#gridR'),82.5);
-if(HAS){[['#wfP',80.3],['#wfR',82.5]].forEach(([s,v])=>{const el=$(s),sm=el.querySelector('small').outerHTML;const o={v:0};gsap.to(o,{v,duration:1.6,ease:'expo.out',scrollTrigger:{trigger:el,start:'top 82%'},onUpdate:()=>el.innerHTML=fmt(o.v,1)+sm})})}
+waffle($('#gridP'),80);waffle($('#gridR'),82);
+if(HAS){[['#wfP',80],['#wfR',82]].forEach(([s,v])=>{const el=$(s),sm=el.querySelector('small').outerHTML;const o={v:0};gsap.to(o,{v,duration:1.6,ease:'expo.out',scrollTrigger:{trigger:el,start:'top 82%'},onUpdate:()=>el.innerHTML=Math.round(o.v)+sm})})}
 
 /* ===== batang ===== */
 function bars(el,rows,lo,hi){el.innerHTML=rows.map(r=>'<div class="brow'+(r.hl?' hl':'')+'"><div class="k">'+r.k+'</div><div class="track"><div class="fill" data-w="'+((r.v-lo)/(hi-lo)*100).toFixed(2)+'"></div></div><div class="v">'+fmt(r.v)+'</div></div>').join('');grow(el)}
@@ -855,8 +860,8 @@ let setStep3=()=>{};
  setStep3(0,0);
 })();
 (function(){
- const sec=$('#akar3d'),cv=$('#gl'),bs=$('#bscan'),fc=$('#fcard'),bsIn=$('.bs-in',bs),vid=$('video',fc);
- $('#apxB').innerHTML=AP.map(([x,y],i)=>'<g class="a"><circle class="c" cx="'+x+'" cy="'+y+'" r="30"/><text x="'+(x+38)+'" y="'+(y-32)+'">'+(i+1)+'</text></g>').join('');
+ const sec=$('#akar3d'),cv=$('#gl'),bs=$('#bscan'),fc=$('#fcard'),bsIn=$('.bs-in',bs),labB=$('.lab',bs),vid=$('video',fc);
+ $('#apxB').innerHTML=AP.map(([x,y],i)=>'<g class="a"><text x="'+(x+38)+'" y="'+(y-32)+'">'+(i+1)+'</text></g>').join('');
  const apxG=$$('#apxB .a');
  const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)),seg01=(p,a,b)=>clamp((p-a)/(b-a)),lerp=(a,b,t)=>a+(b-a)*t,ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
  let W=innerWidth,H=innerHeight;const narrow=()=>W<820;
@@ -871,6 +876,7 @@ let setStep3=()=>{};
   if(fo>.01&&visible&&!RM){if(vid.paused)vid.play().catch(()=>{})}else if(!vid.paused)vid.pause();
   const e=ease(seg01(u2,.72,1));place(bs,1150/1035,e,seg01(u1,.05,.3)*lerp(1,.92,e),.86);
   bsIn.style.clipPath='inset(0 '+((1-seg01(u1,.15,.75))*100).toFixed(1)+'% 0 0)';
+  labB.style.opacity=String(seg01(u2,.1,.45));
   apxG.forEach((g,i)=>{const a=seg01(u2,.1+i*.08,.25+i*.08);g.style.opacity=String(a);g.style.transformBox='fill-box';g.style.transformOrigin='center';g.style.transform='scale('+(.4+.6*a).toFixed(3)+')'})}
  function fallback(){cv.remove();const d=document.createElement('div');d.className='fallback';d.innerHTML='<img src="img/t_c.jpg" alt="Rekonstruksi akar 3D final Pohon 1">';sec.insertBefore(d,sec.firstChild);bs.style.display='none';fc.style.display='none';setStep3(N3-1,1)}
  if(!window.THREE){fallback();return}
@@ -985,17 +991,17 @@ let setStep3=()=>{};
 
 /* ===== sintetis & pohon ===== */
 const TREES=[
- {n:1,id:'AG03',c1:[375,264,50,111],fin:[178,133,6,23,7,61.491,0.409,6],std:[9,51,20,122.954,0.397,9],gal:[3,7],img:'p1'},
- {n:2,id:'AG01',c1:[324,220,52,104],fin:[157,112,8,18,6,58.830,0.396,8],std:[7,38,18,96.983,0.360,7],gal:[5,11]},
- {n:3,id:'AG04',c1:[398,303,51,95],fin:[190,178,9,31,11,81.441,0.415,9],std:[10,51,30,134.736,0.440,9],gal:[7,9],img:'p3'},
- {n:4,id:'AG05',c1:[256,180,31,76],fin:[104,93,6,20,2,47.378,0.367,5],std:[7,29,9,61.228,0.360,7],gal:[6,9]},
- {n:5,id:'AG06',m:'mati',c1:[291,203,56,88],fin:[142,102,7,16,13,54.508,0.430,6],std:[9,47,21,114.148,0.456,6],gal:[11,20]},
- {n:6,id:'AG07',c1:[262,173,52,89],fin:[143,106,5,19,5,47.469,0.397,5],std:[9,59,10,119.777,0.408,9]},
- {n:7,id:'AG08',c1:[224,158,39,66],fin:[108,81,5,16,4,36.580,0.359,5],std:[7,34,10,69.220,0.364,7]},
- {n:8,id:'AG09',c1:[246,167,57,79],fin:[115,76,7,21,1,47.271,0.458,4],std:[7,34,8,78.365,0.488,3]}];
+ {n:1,id:'AG03',c1:[375,264,50,111],fin:[178,133,6,23,7,61.491,0.409,6],gal:[3,7],img:'p1'},
+ {n:2,id:'AG01',c1:[324,220,52,104],fin:[157,112,8,18,6,58.830,0.396,8],gal:[5,11]},
+ {n:3,id:'AG04',c1:[398,303,51,95],fin:[190,178,9,31,11,81.441,0.415,9],gal:[7,9],img:'p3'},
+ {n:4,id:'AG05',c1:[256,180,31,76],fin:[104,93,6,20,2,47.378,0.367,5],gal:[6,9]},
+ {n:5,id:'AG06',m:'mati',c1:[291,203,56,88],fin:[142,102,7,16,13,54.508,0.430,6],gal:[11,20]},
+ {n:6,id:'AG07',c1:[262,173,52,89],fin:[143,106,5,19,5,47.469,0.397,5]},
+ {n:7,id:'AG08',c1:[224,158,39,66],fin:[108,81,5,16,4,36.580,0.359,5]},
+ {n:8,id:'AG09',c1:[246,167,57,79],fin:[115,76,7,21,1,47.271,0.458,4]}];
 (function(){const box=$('#trees');
  TREES.forEach((t,i)=>{const b=document.createElement('button');b.type='button';b.innerHTML='P'+t.n+'<small>'+t.id+(t.m?' · '+t.m:'')+'</small>';b.setAttribute('aria-pressed',String(i===0));b.setAttribute('aria-label','Pohon '+t.n+' '+t.id);b.addEventListener('click',()=>{[...box.children].forEach(c=>c.setAttribute('aria-pressed','false'));b.setAttribute('aria-pressed','true');show(i,true)});box.appendChild(b)});
- function show(i,anim){const t=TREES[i],[a,tp,fp]=t.c1,f=t.fin,s=t.std;
+ function show(i,anim){const t=TREES[i],[a,tp,fp]=t.c1,f=t.fin;
   $('#tstats').innerHTML='<div><b>'+tp+'<span style="display:inline;font-size:.5em;color:var(--ink-2)"> / '+a+'</span></b><span>akar berlabel yang ditemukan model</span></div><div><b>'+fmt(tp/(tp+fp),2)+'</b><span>ketepatan titik di pohon ini</span></div><div><b>'+f[0]+'→'+f[1]+'</b><span>simpul graf → lolos BF-GCN</span></div><div><b>'+(t.gal?t.gal[0]+' / '+t.gal[1]:'—')+'</b><span>'+(t.gal?'akar galian (pohon ini / semua)':'tidak ada data galian')+'</span></div>';
   const mx=i=>Math.max(...TREES.map(q=>q.fin[i]))*1.08,row=(k,i,txt)=>'<div class="brow hl"><div class="k">'+k+'</div><div class="track"><div class="fill" data-w="'+(f[i]/mx(i)*100).toFixed(1)+'"></div></div><div class="v">'+txt+'</div></div>';
   $('#treeBars').innerHTML=row('Akar primer',2,f[2])+row('Akar sekunder',3,f[3])+row('Akar tersier',4,f[4])+row('Panjang total (m)',5,fmt(f[5],1))+row('Akar di cincin r 0,8 m',7,f[7]);grow($('#treeBars'));
@@ -1005,14 +1011,13 @@ const TREES=[
 
 /* ===== galian ===== */
 const GAL={1:{c:[7,26,27],l:[6,15,18,24]},2:{c:[2,14,15,21,22],l:[18,19,24,27,31,36]},3:{c:[1,9,10,14,29,33,34],l:[5,25]},4:{c:[3,4,11,12,20,28],l:[1,2,23]},5:{c:[3,4,5,8,14,15,17,18,29,34,36],l:[1,2,9,10,19,21,22,27,35]}};
-const REC={std:{1:[7,10,13,16,20,25,29,32,35],2:[4,8,12,15,21,24,32],3:[5,9,11,14,18,22,26,30,33],4:[2,5,8,12,22,32,35],5:[6,15,19,28,34,36]},usu:{1:[7,13,16,23,27,36],2:[2,7,11,14,17,21,24,30],3:[4,7,11,14,18,24,27,30,33],4:[5,8,12,31,35],5:[1,4,15,19,28,30]}};
+const REC={usu:{1:[7,13,16,23,27,36],2:[2,7,11,14,17,21,24,30],3:[4,7,11,14,18,24,27,30,33],4:[5,8,12,31,35],5:[1,4,15,19,28,30]}};
 const G={tree:1,m:'usu',set:'c',tol:1};
 const TID=['','AG03','AG01','AG04','AG05','AG06'];
 const dist=(p,q)=>Math.min(Math.abs(p-q),36-Math.abs(p-q));
 function match(P,T,tol){const m=new Map();function aug(p,seen){for(const q of T){if(dist(p,q)<=tol&&!seen.has(q)){seen.add(q);if(!m.has(q)||aug(m.get(q),seen)){m.set(q,p);return true}}}return false}P.forEach(p=>aug(p,new Set()));return m}
 const targets=t=>G.set==='c'?GAL[t].c.slice():GAL[t].c.concat(GAL[t].l);
 function counts(t,meth){const P=REC[meth][t],T=targets(t),m=match(P,T,G.tol);return{tp:m.size,fp:P.length-m.size,fn:T.length-m.size,m}}
-const f1=(a,b,c)=>{const p=a/Math.max(a+b,1),r=a/Math.max(a+c,1);return p+r?2*p*r/(p+r):0};
 // warna: hijau = cocok, merah = akar galian terlewat, abu = akar model tanpa pasangan
 const GC={ok:'#8CC59A',okInk:'#10170F',miss:'#E0705F',fp:'#8B7B6C',empty:'#2A2019',emptyLine:'#47362A'};
 const ico={
@@ -1046,7 +1051,8 @@ function drawRing(anim){
  $('#gSum').innerHTML='Pohon '+t+' ('+TID[t]+'): model menemukan <b>'+tp+' dari '+T.length+'</b> akar galian'+(G.set==='a'?' (termasuk akar pohon tetangga)':'')+'. Model menggambar '+P.length+' akar; '+fp+' di antaranya tidak punya pasangan di galian.';
  $('#score').innerHTML='<div><b>'+tp+'</b><span>akar galian ditemukan model</span></div><div><b class="miss">'+fn+'</b><span>akar galian terlewat</span></div><div><b class="fp">'+fp+'</b><span>akar model tanpa pasangan di galian</span></div>';
  let a=0,b=0,d=0;for(let q=1;q<=5;q++){const r=counts(q,G.m);a+=r.tp;b+=r.fp;d+=r.fn}
- $('#tot').innerHTML='<tr><td>BF-GCN + Bio-cGAN</td><td class="n">'+a+'</td><td class="n">'+d+'</td><td class="n">'+b+'</td><td class="n">'+fmt(f1(a,b,d))+'</td></tr>'}
+ const row=(lab,x,y,z,c)=>'<tr'+(c?' class="cur"':'')+'><td>'+lab+'</td><td class="n">'+x+'</td><td class="n">'+y+'</td><td class="n">'+z+'</td></tr>';
+ $('#tot').innerHTML=row('Pohon '+t+' · '+TID[t],tp,fn,fp,1)+row('Total 5 pohon',a,d,b)}
 tabs($('#gTree'),[1,2,3,4,5].map(k=>({key:k,label:'Pohon '+k+' · '+TID[k]})),1,k=>{G.tree=k;drawRing(true)});
 drawRing(false);
 if(HAS){const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();drawRing(true)}},{threshold:.35});io.observe($('#ring'))}
