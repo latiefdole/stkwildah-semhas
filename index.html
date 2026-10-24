@@ -199,12 +199,6 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
 .axis{display:grid;grid-template-columns:minmax(0,230px) minmax(0,1fr) 62px;gap:14px}
 .axis .ticks{display:flex;justify-content:space-between;font-family:var(--f-mono);font-size:11px;color:var(--ink-2)}
 @media (max-width:560px){.brow,.axis{grid-template-columns:1fr 54px}.brow .k{grid-column:1/-1}.axis>span:first-child{display:none}.axis .ticks{grid-column:1}}
-details.more{border:1px solid var(--line);border-radius:16px;background:var(--card);padding:6px 22px}
-details.more>summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding-block:14px;font-family:var(--f-display);font-size:22px;font-weight:700;font-variation-settings:"wdth" 88}
-details.more>summary::-webkit-details-marker{display:none}
-details.more>summary::after{content:"+";font-family:var(--f-mono);font-size:22px;color:var(--bark)}
-details.more[open]>summary::after{content:"–"}
-details.more .grid2{padding-bottom:22px}
 .mx{display:grid;grid-template-columns:minmax(0,1.3fr) repeat(3,minmax(0,1fr));gap:6px}
 .mx .h{font-family:var(--f-mono);font-size:11.5px;color:var(--ink-2);letter-spacing:.06em;text-transform:uppercase;padding:6px 4px}
 .mx .r{font-size:14.5px;padding:12px 4px;align-self:center}
@@ -524,15 +518,6 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <div class="wf"><div class="big" id="wfP">80,3<small>/ 100</small></div><div class="grid100" id="gridP" aria-hidden="true"></div><p><b>Dari setiap 100 titik yang ditunjuk model, sekitar 80 memang akar.</b> <span class="dim">(precision 0,803)</span></p></div>
 <div class="wf"><div class="big" id="wfR" style="color:var(--bark)">82,5<small>/ 100</small></div><div class="grid100 rec" id="gridR" aria-hidden="true"></div><p><b>Dari setiap 100 akar yang ada, sekitar 82 berhasil ditemukan.</b> <span class="dim">(recall 0,825)</span></p></div>
 </div>
-<details class="more rv" style="margin-top:24px"><summary>Detail teknis untuk yang ingin tahu</summary>
-<div class="grid2">
-<div class="card"><h3>Memilih detektor dasar</h3><div class="tabs" id="dTabs" role="group" aria-label="Metrik detektor"></div>
-<div class="axis"><span></span><div class="ticks"><span>0,50</span><span>0,60</span><span>0,70</span><span>0,80</span><span>0,90</span></div><span></span></div>
-<div class="bars" id="detBars"></div><p class="note">Rata-rata 5 seed. RetinaNet unggul AP50 di 5 dari 5 seed, sehingga dipakai sebagai dasar.</p></div>
-<div class="card"><h3>Blended feature di tiga posisi</h3><div class="mx" id="mx"></div><p class="note">AP titik @0,30 m. Tanpa blended 0,869 (5 seed) / 0,871 (10 seed). Dipilih dari validasi: late fusion fitur fisika + kesinambungan antar-lintasan (F1 +0,007; 8/10 seed; p 0,031).</p></div>
-<div class="card"><h3>Kurva precision–recall</h3><div class="plate"><img src="img/pr.jpg" alt="Kurva precision-recall titik apex" width="1400" height="598" loading="lazy"></div><p class="note">Garis merah = pipeline final; lingkaran = titik operasi (P 0,803; R 0,825). Batas ketelitian label untuk AP titik @0,30 m = 0,994.</p></div>
-<div class="card"><h3>Seluruh 850 radargram</h3><p class="note">Validasi silang 5 lipatan: F1 0,760, AP titik @0,30 m 0,867. Per pohon pada titik operasi R70 (skala 0,50–1,00):</p><div class="legend"><span><i style="background:var(--leaf)"></i>precision</span><span><i style="background:var(--bark)"></i>recall</span></div><div class="duo" id="oof"></div></div>
-</div></details>
 </div></section>
 
 <!-- ================= ADEGAN 3D: dari B-scan ke akar ================= -->
@@ -587,9 +572,9 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 <section class="ch alt" id="temuan"><div class="in">
 <div class="ch-head rv"><span class="kicker"><b>06 · Temuan</b></span><h2>Yang kami pelajari.</h2></div>
 <div class="finds">
-<div class="find rv"><b>0,903<small>AP titik @0,30 m</small></b><div><h3>Akar ditemukan sebagai titik, dalam meter.</h3><p>Precision 0,803 dan recall 0,825 (RetinaNet standar: F1 0,712 → usulan 0,814). Konsisten pada 850 radargram (F1 0,760).</p></div></div>
-<div class="find rv"><b>+0,007<small>F1 · p 0,031</small></b><div><h3>Sinyal dan lintasan tetangga membantu.</h3><p>Fitur fisika sinyal dan kesinambungan antar-lintasan pada late fusion memberi kenaikan kecil tetapi bermakna, dan saling melengkapi (p 0,005).</p></div></div>
-<div class="find rv"><b>0,809<small>akurasi topologi</small></b><div><h3>GCN yang tahu arah ke batang.</h3><p>Akurasi topologi naik dari 0,312 ke 0,809 pada data sintetis. Di lapangan setara metode standar terhadap galian (MAE jumlah akar 2,8 vs 3,2), dengan akar lebih mulus.</p></div></div>
+<div class="find rv"><b>80%<small>titik yang ditunjuk model memang akar</small></b><div><h3>Computer vision menemukan akar sebagai titik, dalam meter.</h3><p>Dari setiap 100 titik yang ditunjuk model, sekitar 80 memang akar, dan sekitar 82 dari setiap 100 akar yang ada berhasil ditemukan. Hasil serupa terlihat pada seluruh 850 radargram dari delapan pohon.</p></div></div>
+<div class="find rv"><b>81%<small>simpul tersambung ke induk yang benar</small></b><div><h3>Titik-titik tersambung menjadi akar yang utuh.</h3><p>Pada 60 pohon uji yang bentuk akarnya sudah diketahui, sekitar 8 dari 10 simpul tersambung ke induk yang benar, sehingga setiap cabang tahu asalnya.</p></div></div>
+<div class="find rv"><b>8<small>pohon Agathis direkonstruksi</small></b><div><h3>Arsitektur akar terlihat tanpa menggali.</h3><p>Dari 850 radargram, akar delapan pohon Agathis di Hutan Pendidikan Gunung Walat disusun ulang dalam tiga dimensi: sebaran, kedalaman, dan arahnya terlihat tanpa membuka tanah.</p></div></div>
 </div>
 <div class="why">
 <div class="rv"><h4>Memantau tanpa merusak</h4><p>Pohon di hutan kota dan kawasan konservasi dapat diperiksa akarnya tanpa digali.</p></div>
@@ -847,14 +832,6 @@ function grow(el){const go=()=>$$('.fill',el).forEach(f=>f.style.width=Math.max(
  if(!HAS){go();return}const r=el.getBoundingClientRect();if(r.top<innerHeight&&r.bottom>0){requestAnimationFrame(()=>requestAnimationFrame(go));return}
  go();$$('.fill',el).forEach(f=>{f.style.transition='none';f.style.width='0'});void el.offsetWidth;$$('.fill',el).forEach(f=>f.style.transition='');
  const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disconnect();go()}},{threshold:.25});io.observe(el)}
-const DET=[['RetinaNet',0.789,0.611,0.620],['FCOS',0.780,0.577,0.623],['YOLOv11m',0.710,0.557,0.571],['SSD300',0.719,0.537,0.568]];
-function drawDet(k){bars($('#detBars'),DET.map((r,i)=>({k:r[0],v:r[k],hl:i===0})),0.5,0.9)}
-tabs($('#dTabs'),[{key:2,label:'AP50'},{key:1,label:'AP30'},{key:3,label:'F1'}],2,drawDet);drawDet(2);
-$('details.more').addEventListener('toggle',e=>{if(e.target.open){drawDet(2);$$('#oof .fill').forEach(f=>f.style.width=f.dataset.w+'%')}});
-(function(){const M=[['Statistik terbaik',[.875,.877,.871]],['Fisika terbaik',[.874,.870,.872]],['Gabungan',[.871,.871,.875]]];let h='<div class="h"></div><div class="h">Mid</div><div class="h">Head</div><div class="h">Late</div>';
- M.forEach(([k,v],i)=>{h+='<div class="r">'+k+'</div>';v.forEach((x,j)=>{const t=Math.max(0,Math.min(1,(x-.866)/.012));h+='<div class="t'+(i===1&&j===2?' pick':'')+'" style="background:color-mix(in oklab,var(--bark) '+Math.round(12+t*58)+'%,var(--mist));color:'+(t>.55?'var(--paper)':'var(--ink)')+'">'+fmt(x)+'</div>'})});$('#mx').innerHTML=h})();
-(function(){const C1=[['AG03',264,50,111],['AG01',220,52,104],['AG04',303,51,95],['AG05',180,31,76],['AG06',203,56,88],['AG07',173,52,89],['AG08',158,39,66],['AG09',167,57,79]];
- $('#oof').innerHTML=C1.map(([id,tp,fp,fn],i)=>{const P=tp/(tp+fp),R=tp/(tp+fn);return '<div class="drow"><div class="k">Pohon '+(i+1)+'<small>'+id+' · P '+fmt(P,2)+' · R '+fmt(R,2)+'</small></div><div class="pair"><div class="track"><div class="fill p" data-w="'+((P-.5)/.5*100).toFixed(1)+'"></div></div><div class="track"><div class="fill r" data-w="'+((R-.5)/.5*100).toFixed(1)+'"></div></div></div></div>'}).join('')})();
 
 /* ===== ADEGAN 3D: alur lengkap, dari akuisisi sampai akar 3D ===== */
 const STEPS3=[
