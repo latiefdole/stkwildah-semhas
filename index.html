@@ -992,6 +992,8 @@ if(HAS){const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){io.disco
 if(HAS&&matchMedia('(hover:hover)').matches)$$('.tabs button,.trees button').forEach(b=>{b.addEventListener('pointermove',e=>{const r=b.getBoundingClientRect();gsap.to(b,{x:(e.clientX-r.left-r.width/2)*.18,y:(e.clientY-r.top-r.height/2)*.25,duration:.3,ease:'power3.out'})});b.addEventListener('pointerleave',()=>gsap.to(b,{x:0,y:0,duration:.6,ease:'elastic.out(1,.4)'}))});
 
 addEventListener('load',()=>{if(HAS)ScrollTrigger.refresh()});
+// bagian biasa berubah tinggi (mis. "Detail teknis" dibuka) -> hitung ulang posisi adegan yang dipin
+if(HAS&&window.ResizeObserver){const hs=new Map();let tm;const ro=new ResizeObserver(es=>{let ch=false;es.forEach(e=>{const h=Math.round(e.target.offsetHeight);if(hs.has(e.target)&&hs.get(e.target)!==h)ch=true;hs.set(e.target,h)});if(ch){clearTimeout(tm);tm=setTimeout(()=>ScrollTrigger.refresh(),120)}});$$('.hero,.ch').forEach(el=>ro.observe(el))}
 })();
 </script>
 
