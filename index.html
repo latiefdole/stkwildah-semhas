@@ -266,6 +266,11 @@ th{font-family:var(--f-mono);font-size:11px;letter-spacing:.06em;text-transform:
 td.n,th.n{text-align:right;font-family:var(--f-mono)}
 tr.cur td{color:var(--bark);font-weight:600}
 .disclaimer{font-size:13.5px!important;color:var(--ink-2);font-style:italic;margin-top:-4px}
+.sitecard{margin-bottom:48px}.sitecard p{max-width:80ch}
+.sitephotos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.sitephotos img{display:block;width:100%;aspect-ratio:3/4;height:auto;object-fit:cover;border-radius:10px;border:1px solid var(--line)}
+.sitephotos figcaption{font-family:var(--f-mono);font-size:12px;letter-spacing:.06em;color:var(--ink-2);margin-top:6px;text-align:center}
+@media (max-width:640px){.sitephotos{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .callout{border-left:4px solid var(--bark);background:var(--card);padding:16px 20px;border-radius:0 12px 12px 0;font-size:16px;max-width:70ch}
 
 /* temuan */
@@ -561,7 +566,8 @@ footer details p{margin-top:8px;color:var(--ink-2);font-size:15.5px}
 
 <!-- ================= GALIAN ================= -->
 <section class="ch" id="galian"><div class="in">
-<div class="ch-head rv"><span class="kicker"><b>05 · Bukti lapangan</b></span><h2>Dicocokkan dengan galian.</h2><p>Pada lima pohon, akar pernah digali di cincin 0,8 m dari batang (Taufiqurrachman <i>et al.</i> 2025). Lingkaran di bawah adalah cincin galian itu dilihat dari atas: 36 titik searah jarum jam, titik 1 di utara. Cincin ini berada di dekat batang, pada zona yang tidak terpindai lintasan GPR (lintasan terdekat ±1,14 m dari batang). Akar model di cincin merupakan hasil prediksi model, yang melanjutkan akar terdeteksi lebih jauh dari batang ke arah batang. Dengan demikian, perbandingan dengan galian ini menguji kemampuan model memprediksi kontinuitas akar pada zona yang tidak terpindai GPR. Pilih pohon untuk membandingkan akar hasil prediksi model dengan akar hasil galian.</p></div>
+<div class="ch-head rv"><span class="kicker"><b>05 · Bukti lapangan</b></span><h2>Dicocokkan dengan galian.</h2><p>Pada lima pohon, akar pernah digali di cincin 0,8 m dari batang (Taufiqurrachman <i>et al.</i> 2025). Lingkaran di bawah adalah cincin galian itu dilihat dari atas: 36 titik searah jarum jam, titik 1 di utara. Cincin ini berada di dekat batang, pada area bekas galian yang terbuka sehingga tidak terpindai lintasan GPR (lintasan terdekat ±1,14 m dari batang). Akar model di cincin merupakan hasil prediksi model, yang melanjutkan akar terdeteksi lebih jauh dari batang ke arah batang. Dengan demikian, perbandingan dengan galian ini menguji kemampuan model memprediksi kontinuitas akar pada zona yang tidak terpindai GPR. Pilih pohon untuk membandingkan akar hasil prediksi model dengan akar hasil galian.</p></div>
+<div class="card rv sitecard"><h3>Area galian di sekitar batang tidak dipindai GPR</h3><div class="sitephotos"><figure><img src="img/galian_AG01.jpg" alt="Pangkal batang pohon AG01 dengan tanah terbuka bekas galian" width="900" height="1200" loading="lazy"><figcaption>AG01</figcaption></figure><figure><img src="img/galian_AG03.jpg" alt="Pangkal batang pohon AG03 dengan tanah terbuka bekas galian" width="900" height="1200" loading="lazy"><figcaption>AG03</figcaption></figure><figure><img src="img/galian_AG06.jpg" alt="Pangkal batang pohon AG06 dengan tanah terbuka bekas galian" width="900" height="1200" loading="lazy"><figcaption>AG06</figcaption></figure><figure><img src="img/galian_AG07.jpg" alt="Pangkal batang pohon AG07 dengan tanah terbuka bekas galian" width="900" height="1200" loading="lazy"><figcaption>AG07</figcaption></figure></div><p>Tanah di sekitar batang sudah terbuka bekas galian, sehingga lintasan GPR tidak dapat dijalankan di area ini. Akar pada cincin 0,8 m karena itu tidak pernah terekam GPR. <b>Perbandingan dengan galian menguji kemampuan model memprediksi dan menyambungkan akar ke arah batang, bukan kemampuan GPR merekam akar di cincin.</b></p></div>
 <div class="gal">
 <div class="ringbox"><div class="ring" id="ring"></div><div class="glegend" id="gLegend"></div></div>
 <div class="ctrls">
@@ -854,7 +860,7 @@ const STEPS3=[
  {k:'Merging',h:'Titik yang berdekatan digabung.',p:'Titik kembar dari lintasan yang bersebelahan digabung menjadi satu simpul, lalu setiap simpul dihubungkan dengan tetangga terdekatnya menjadi graf.'},
  {k:'GCN',h:'Titik palsu disaring.',p:'GCN menilai setiap simpul bersama tetangganya. Simpul yang tidak cocok dengan pola akar dibuang.'},
  {k:'GCN',h:'Simpul tersambung menjadi akar.',p:'Setiap simpul memilih satu induk yang lebih dekat ke batang, lalu urutan simpul dihaluskan menjadi kurva akar.'},
- {k:'GAN',h:'Celah dekat batang diisi.',p:'Radar tidak bisa memindai tepat di samping batang. Bagian itu diisi kurva dari GAN bersyarat yang mengikuti aturan tumbuh akar.'}];
+ {k:'GAN',h:'Celah dekat batang diisi.',p:'Area di sekitar batang adalah bekas galian yang terbuka, sehingga tidak dipindai GPR. Bagian ini diisi kurva dari GAN, yang menyambung akar ke arah batang.'}];
 let setStep3=()=>{};
 (function(){
  const N=STEPS3.length,prog=$('#prog');prog.innerHTML=STEPS3.map(()=>'<i><b></b></i>').join('');const bars=$$('b',prog);
